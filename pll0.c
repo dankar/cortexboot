@@ -14,7 +14,7 @@ static void flash_latency(uint32_t frequency)
         LPC_SC->FLASHCFG = ((wait_states - 1) << LPC_SC_FLASHCFG_FLASHTIM_bit) | LPC_SC_FLASHCFG_RESERVED_value;
 }
 
-static void pll0_feed(void)
+void pll0_feed(void)
 {
         LPC_SC->PLL0FEED = LPC_SC_PLL0FEED_FIRST;
         LPC_SC->PLL0FEED = LPC_SC_PLL0FEED_SECOND;

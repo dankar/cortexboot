@@ -31,4 +31,4 @@ clean:
 	rm *.o *.bin *.hex
 
 program: out.hex
-	sudo lpc21isp out.hex /dev/ttyUSB0 115200 120000000
+	sudo lpc21isp out.hex /dev/ttyUSB0 115200 14746
