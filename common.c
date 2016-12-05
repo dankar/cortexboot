@@ -9,6 +9,7 @@ void clear_bit16(volatile uint16_t *reg, uint8_t bit);
 uint8_t check_bit32(const volatile uint32_t *reg, uint8_t bit);
 void set_bit32(volatile uint32_t *reg, uint8_t bit);
 void clear_bit32(volatile uint32_t *reg, uint8_t bit);
+uint16_t bs16(uint16_t w);
 
 uint32_t strlen(const char *str)
 {

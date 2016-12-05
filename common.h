@@ -5,7 +5,15 @@
 
 #define BV(b) (1 << b)
 
+#define MAX(x, y) ((x > y) ? x : y)
+#define MIN(x, y) ((x > y) ? y : x)
+
 uint32_t strlen(const char *str);
+
+inline uint16_t bs16(uint16_t w)
+{
+	return (w >> 8) | ((w & 0xff) << 8);
+}
 
 inline uint8_t check_bit8(const volatile uint8_t *reg, uint8_t bit)
 {

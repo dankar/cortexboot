@@ -4,6 +4,8 @@
 #include <stdint.h>
 
 void pll0_feed();
-uint32_t pll0_start(uint32_t crystal, uint32_t frequency);
+
+// Sets pll0 to 480MHz and core clk divisor to yield 120MHz core clock
+uint32_t pll0_start();
 
 #endif

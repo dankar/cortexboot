@@ -4,6 +4,7 @@
 #include "uart.h"
 #include "pll0.h"
 #include "iap.h"
+#include "usb.h"
 
 static void system_init(void)
 {
@@ -35,16 +36,10 @@ static void system_init(void)
         set_pin_od(0, 1, 0);
         set_pin_dir(0, 1, OUT);
 
-	set_pin_function(1, 18, 0x00);
-	set_pin_mode(1, 18, NEITHER);
-	set_pin_od(1, 18, 0);
-	set_pin_dir(1, 18, OUT);
-
         pin_set(0,0);
 	pin_set(0,1);
-	pin_set(1,18);
 
-        core_f = pll0_start(25000000, 120000000);
+        core_f = pll0_start();
 
         pin_set(0,1);
 
@@ -54,6 +49,10 @@ static void system_init(void)
 	uart_print("CPU set to ");
 	uart_print_int(core_f);
 	uart_println(" Hz");
+
+	uart_print_hex32(0x12345678);
+
+	usb_init();
 }
 
 void delay()
@@ -68,24 +67,11 @@ int main()
 	char c;
 	pin_set(0, 0);
 	pin_set(0, 1);
-	pin_set(1, 18);
+	pin_clear(0, 0);
 
 	for(;;)
 	{
-		c = uart_read_char();
-
-		if(c == 'p')
-		{
-			invoke_isp();
-		}
-		pin_clear(1, 18);
-		pin_clear(0, 0);
-		pin_clear(0, 1);
-		delay();
-		pin_set(0, 1);
-		pin_set(1, 18);
-		pin_set(0, 0);
-		uart_print_char(c);
+		usb_poll();
 	}
 
 	return 0;

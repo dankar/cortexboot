@@ -11,6 +11,7 @@
 #define IN 0x00
 #define OUT 0x01
 
+void set_pin_debug(uint8_t enable);
 void set_pin_function(uint8_t port, uint8_t pin, uint8_t function);
 void set_pin_mode(uint8_t port, uint8_t pin, uint8_t mode);
 void set_pin_od(uint8_t port, uint8_t pin, uint8_t od);

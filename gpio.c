@@ -1,8 +1,16 @@
 #include "inc/LPC17xx.h"
 #include "common.h"
+#include "uart.h"
 
 #define PINSEL_MASK 	0x3
 #define PINMODE_MASK 	0x3
+
+uint8_t debug = 0;
+
+void set_pin_debug(uint8_t enable)
+{
+	debug = enable;
+}
 
 LPC_GPIO_TypeDef *get_port(uint8_t port)
 {
@@ -29,8 +37,29 @@ void set_pin_function(uint8_t port, uint8_t pin, uint8_t function)
 
 	pinsel = &(&LPC_PINCON->PINSEL0)[port * 2 + pin / 16];
 
+	if(pin >= 16)
+		pin -= 16;
+
+	if(debug)
+	{
+		uart_print("Anding register with ");
+		uart_print_int(PINSEL_MASK << (pin * 2));
+		uart_println("");
+		uart_print("Oring register with ");
+		uart_print_int(function << (pin * 2));
+		uart_println("");
+	}
 	*pinsel &= ~(PINSEL_MASK << (pin * 2)); // Clear function
 	*pinsel |= function << (pin * 2); // apply new function
+
+	if(debug)
+	{
+		uart_print("Register: ");
+		uart_print_int((uint32_t)pinsel);
+		uart_print(", value: ");
+		uart_print_int((uint32_t)*pinsel);
+		uart_println("");
+	}
 }
 
 void set_pin_mode(uint8_t port, uint8_t pin, uint8_t mode)
@@ -38,6 +67,9 @@ void set_pin_mode(uint8_t port, uint8_t pin, uint8_t mode)
 	volatile uint32_t *pinmode;
 
 	pinmode = &(&LPC_PINCON->PINMODE0)[port * 2 + pin / 16];
+
+	if(pin >= 16)
+		pin -= 16;
 	*pinmode &= ~(PINMODE_MASK << (pin * 2));
 	*pinmode |= mode << (pin * 2);
 }
