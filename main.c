@@ -80,6 +80,7 @@ void push_key(uint8_t scan_code)
 	if(!found)
 		return;
 
+	pin_clear(0, 0);
 	keyboard_buffer[i] = scan_code;
 	key_age[i] = 20000;
 }
@@ -97,6 +98,12 @@ void update_keys()
 			}
 		}
 	}
+
+	for(int i = 2; i < 8; i++)
+		if(key_age[i])
+			return;
+
+	pin_set(0,0);
 }
 
 int main()
@@ -105,7 +112,6 @@ int main()
 	char c;
 	pin_set(0, 0);
 	pin_set(0, 1);
-	pin_clear(0, 0);
 	uint32_t counter = 0;
 
 	for(;;)
