@@ -5,6 +5,7 @@
 #include "pll0.h"
 #include "iap.h"
 #include "usb.h"
+#include "usb_impl.h"
 
 static void system_init(void)
 {
@@ -28,12 +29,12 @@ static void system_init(void)
 
         set_pin_function(0, 0, 0x00);
         set_pin_mode(0, 0, NEITHER);
-        set_pin_od(0, 0, 0);
+        set_pin_od(0, 0, 1);
         set_pin_dir(0, 0, OUT);
 
         set_pin_function(0, 1, 0x00);
         set_pin_mode(0, 1, NEITHER);
-        set_pin_od(0, 1, 0);
+        set_pin_od(0, 1, 1);
         set_pin_dir(0, 1, OUT);
 
         pin_set(0,0);
@@ -61,6 +62,43 @@ void delay()
 	for(count = 0; count < count_max; count++);
 }
 
+uint32_t key_age[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+
+void push_key(uint8_t scan_code)
+{
+	uint8_t found = 0;
+	int i;
+	for(i = 2; i < 8; i++)
+	{
+		if(keyboard_buffer[i] == 0 || keyboard_buffer[i] == scan_code)
+		{
+			found = 1;
+			break;
+		}
+	}
+
+	if(!found)
+		return;
+
+	keyboard_buffer[i] = scan_code;
+	key_age[i] = 20000;
+}
+
+void update_keys()
+{
+	for(int i = 2; i < 8; i++)
+	{
+		if(key_age[i])
+		{
+			key_age[i]--;
+			if(key_age[i] == 0)
+			{
+				keyboard_buffer[i] = 0;
+			}
+		}
+	}
+}
+
 int main()
 {
 	system_init();
@@ -68,10 +106,25 @@ int main()
 	pin_set(0, 0);
 	pin_set(0, 1);
 	pin_clear(0, 0);
+	uint32_t counter = 0;
 
 	for(;;)
 	{
 		usb_poll();
+		counter++;
+		if(counter % 1000000 == 0)
+			uart_println("tick");
+
+		if(uart_char_is_available())
+		{
+			char c = uart_read_char();
+			if(c == 'a')
+			{
+				push_key(5);
+			}
+		}
+
+		update_keys();
 	}
 
 	return 0;

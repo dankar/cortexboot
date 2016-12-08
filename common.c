@@ -22,4 +22,37 @@ uint32_t strlen(const char *str)
 
         return count;
 }
+uint32_t wstrlen(const wchar_t *str)
+{
+        uint32_t count = 0;
+        while(*str)
+        {
+                count++;
+                str++;
+        }
 
+        return count;
+}
+
+void *memcpy(void *dst, const void* src, size_t num)
+{
+	uint8_t *d = dst;
+	const uint8_t *s = src;
+	for(int i = 0; i < num; i++)
+	{
+		d[i] = s[i];
+	}
+
+	return dst;
+}
+
+void *memset(void *dst, int val, size_t num)
+{
+	uint8_t *d = dst;
+	for(int i = 0; i < num; i++)
+	{
+		d[i] = val;
+	}
+
+	return dst;
+}

@@ -1,7 +1,7 @@
 TOOLCHAIN=arm-none-eabi-
 LINKSCRIPT=test.ld
 LDFLAGS=-T $(LINKSCRIPT)
-CFLAGS=-c -mcpu=cortex-m3 -mthumb -g -I.
+CFLAGS=-c -mcpu=cortex-m3 -mthumb -g -I. -fshort-wchar
 ASFLAGS=-c -mcpu=cortex-m3 -mthumb -g -I.
 CC=$(TOOLCHAIN)gcc
 LD=$(TOOLCHAIN)ld
@@ -15,7 +15,10 @@ OBJECTS=$(SOURCES:.c=.o)
 BINARY=out.bin
 HEX=out.hex
 
-$(HEX): $(BINARY)
+SERIAL=/dev/ttyUSB1
+BAUD=115200
+
+$(HEX): $(BINARY) reset
 	$(OBJCOPY) out.bin -O ihex out.hex
 
 $(BINARY): $(OBJECTS) $(ASOBJECTS) startup.o
@@ -28,7 +31,13 @@ $(BINARY): $(OBJECTS) $(ASOBJECTS) startup.o
 	$(AS) $(ASFLAGS) $< -o $@
 
 clean:
-	rm *.o *.bin *.hex
+	rm *.o *.bin *.hex reset
+
+reset: reset_tool/reset.c
+	gcc reset_tool/reset.c -o reset
+
+run:
+	sudo minicom -D $(SERIAL) -b $(BAUD)
 
 program: out.hex
-	sudo lpc21isp out.hex /dev/ttyUSB0 115200 14746
+	sudo lpc21isp -control out.hex $(SERIAL) $(BAUD) 14746

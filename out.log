@@ -1,0 +1,374 @@
+sudo minicom -D /dev/ttyUSB1 -b 115200
+[!p[?3;4l[4l>[0m(B[?1h=[H[2J[0m(B[7m[63;1H[K[?12l[?25h[?25l                                                                                                                                                             [?12l[?25h[?12l[?25h[?25lCTRL-A Z for help | 115200 8N1 | NOR | Minicom 2.7 | VT102 | Offline | ttyUSB1                                                                               [?12l[?25h[1;1H[63;1H[?25lCTRL-A Z for help | 115200 8N1 | NOR | Minicom 2.7 | VT102 | Offline | ttyUSB1                                                                               [?12l[?25h[1;1H
+[0m(BWelcome to minicom 2.7
+
+OPTIONS: I18n 
+Compiled on Feb  7 2016, 13:37:27.
+Port /dev/ttyUSB1, 02:29:46
+
+Press CTRL-A Z for help on special keys
+
+UART0 initialized
+CPU set to 120000000 Hz
+12345678USB clock status: ok
+Current value of realized endpoints: 3
+Waiting for realization of endpoint 0...
+Current endpoints: 00000003
+Waiting for realization of endpoint 1...
+Current endpoints: 00000003
+Control endpoints are now realized
+Enabled interrupts
+Set AP_CLK to 1
+GOT USB RESET
+tick
+tick
+tick
+ðUART0 initialized
+CPU set to 120000000 Hz
+12345678USB clock status: ok
+Current value of realized endpoints: 3
+Waiting for realization of endpoint 0...
+Current endpoints: 00000003
+Waiting for realization of endpoint 1...
+Current endpoints: 00000003
+Control endpoints are now realized
+Enabled interrupts
+Set AP_CLK to 1
+GOT USB RESET
+SETUP STAGE
+Got request for device descriptor
+Set up data: 18 bytes total, 1201000200000008efefcdcd110101020301
+1201000200000008efefcdcd110101020301
+There is data to send, sending one packet...
+IN STAGE
+OUT STAGE
+Get status
+SETUP STAGE
+IN STAGE
+SETUP STAGE
+Got request for device descriptor
+Set up data: 18 bytes total, 1201000200000008efefcdcd110101020301
+1201000200000008efefcdcd110101020301
+There is data to send, sending one packet...
+IN STAGE
+IN STAGE
+IN STAGE
+SETUP STAGE
+Got request for config descriptor
+Set up data: 34 bytes total, 0902220001050480fa0904000001030101040921110100012241000705840308000a
+0902220001050480fa0904000001030101040921110100012241000705840308000a
+There is data to send, sending one packet...
+IN STAGE
+IN STAGE
+IN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 10 bytes total, 0a033000300030003000[1;62r[62;1H
+[1;63r[62;1H0a033000300030003000[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSending lang list[1;62r[62;1H
+[1;63r[62;1HSet up data: 4 bytes total, 04030904[1;62r[62;1H
+[1;63r[62;1H04030904[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 20 bytes total, 1403550053004200200073007400690063006b00[1;62r[62;1H
+[1;63r[62;1H1403550053004200200073007400690063006b00[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1H!!!!!!!!!!!!!!!!!!!! Got request for unknown descriptor[1;62r[62;1H
+[1;63r[62;1H[62;9HRequest Type: 80[1;62r[62;1H
+[1;63r[62;1H[62;9HRequest: 06[1;62r[62;1H
+[1;63r[62;1H[62;9HlValue: 00[1;62r[62;1H
+[1;63r[62;1H[62;9HhValue: 06[1;62r[62;1H
+[1;63r[62;1H[62;9HIndex: 0000[1;62r[62;1H
+[1;63r[62;1H[62;9HLength: 000a[1;62r[62;1H
+[1;63r[62;1HStalling endpoint[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for device descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 18 bytes total, 1201000200000008efefcdcd110101020301[1;62r[62;1H
+[1;63r[62;1H1201000200000008efefcdcd110101020301[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSending lang list[1;62r[62;1H
+[1;63r[62;1HSet up data: 4 bytes total, 04030904[1;62r[62;1H
+[1;63r[62;1H04030904[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 10 bytes total, 0a033000300030003000[1;62r[62;1H
+[1;63r[62;1H0a033000300030003000[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 28 bytes total, 1c0364006b00200049006e0064007500730074007200690065007300[1;62r[62;1H
+[1;63r[62;1H1c0364006b00200049006e0064007500730074007200690065007300[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 20 bytes total, 1403550053004200200073007400690063006b00[1;62r[62;1H
+[1;63r[62;1H1403550053004200200073007400690063006b00[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for device descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 18 bytes total, 1201000200000008efefcdcd110101020301[1;62r[62;1H
+[1;63r[62;1H1201000200000008efefcdcd110101020301[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSending lang list[1;62r[62;1H
+[1;63r[62;1HSet up data: 4 bytes total, 04030904[1;62r[62;1H
+[1;63r[62;1H04030904[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 10 bytes total, 0a033000300030003000[1;62r[62;1H
+[1;63r[62;1H0a033000300030003000[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 28 bytes total, 1c0364006b00200049006e0064007500730074007200690065007300[1;62r[62;1H
+[1;63r[62;1H1c0364006b00200049006e0064007500730074007200690065007300[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 20 bytes total, 1403550053004200200073007400690063006b00[1;62r[62;1H
+[1;63r[62;1H1403550053004200200073007400690063006b00[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HOUT STAGE[1;62r[62;1H
+[1;63r[62;1HGet status[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for device descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 18 bytes total, 1201000200000008efefcdcd110101020301[1;62r[62;1H
+[1;63r[62;1H1201000200000008efefcdcd110101020301[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for config descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 9 bytes total, 0902220001050480fa[1;62r[62;1H
+[1;63r[62;1H0902220001050480fa[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for config descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 34 bytes total, 0902220001050480fa0904000001030101040921110100012241000705840308000a[1;62r[62;1H
+[1;63r[62;1H0902220001050480fa0904000001030101040921110100012241000705840308000a[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot set config[1;62r[62;1H
+[1;63r[62;1HWaiting for realization of endpoint 9...[1;62r[62;1H
+[1;63r[62;1HCurrent endpoints: 00000203[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for report descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 65 bytes total, 05010906a101050719e029e71500250175019508810295017508810195057501050819012905910295017503910195067508150026ff00050719002aff008100c[62;158H0[62;158H[1;62r[62;1H
+[1;63r[62;1H05010906a101050719e029e71500250175019508810295017508810195057501050819012905910295017503910195067508150026ff00050719002aff008100c0[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HOUT STAGE[1;62r[62;1H
+[1;63r[62;1HGet status[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HOUT STAGE[1;62r[62;1H
+[1;63r[62;1HGot the extra data[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 10 bytes total, 0a033000300030003000[1;62r[62;1H
+[1;63r[62;1H0a033000300030003000[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HOUT STAGE[1;62r[62;1H
+[1;63r[62;1HGet status[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSending lang list[1;62r[62;1H
+[1;63r[62;1HSet up data: 4 bytes total, 04030904[1;62r[62;1H
+[1;63r[62;1H04030904[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 28 bytes total, 1c0364006b00200049006e0064007500730074007200690065007300[1;62r[62;1H
+[1;63r[62;1H1c0364006b00200049006e0064007500730074007200690065007300[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 20 bytes total, 1403550053004200200073007400690063006b00[1;62r[62;1H
+[1;63r[62;1H1403550053004200200073007400690063006b00[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 24 bytes total, 1803550053004200200053007400690063006b0020003200[1;62r[62;1H
+[1;63r[62;1H1803550053004200200053007400690063006b0020003200[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 24 bytes total, 1803550053004200200053007400690063006b0020003200[1;62r[62;1H
+[1;63r[62;1H1803550053004200200053007400690063006b0020003200[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HOUT STAGE[1;62r[62;1H
+[1;63r[62;1HGet status[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1H!!!!!!!!!!!!!!!!!!!! Got request for unknown descriptor[1;62r[62;1H
+[1;63r[62;1H[62;9HRequest Type: 80[1;62r[62;1H
+[1;63r[62;1H[62;9HRequest: 06[1;62r[62;1H
+[1;63r[62;1H[62;9HlValue: 00[1;62r[62;1H
+[1;63r[62;1H[62;9HhValue: 06[1;62r[62;1H
+[1;63r[62;1H[62;9HIndex: 0000[1;62r[62;1H
+[1;63r[62;1H[62;9HLength: 000a[1;62r[62;1H
+[1;63r[62;1HStalling endpoint[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSending lang list[1;62r[62;1H
+[1;63r[62;1HSet up data: 4 bytes total, 04030904[1;62r[62;1H
+[1;63r[62;1H04030904[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 28 bytes total, 1c0364006b00200049006e0064007500730074007200690065007300[1;62r[62;1H
+[1;63r[62;1H1c0364006b00200049006e0064007500730074007200690065007300[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 20 bytes total, 1403550053004200200073007400690063006b00[1;62r[62;1H
+[1;63r[62;1H1403550053004200200073007400690063006b00[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 24 bytes total, 1803550053004200200053007400690063006b0020003200[1;62r[62;1H
+[1;63r[62;1H1803550053004200200053007400690063006b0020003200[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HSETUP STAGE[1;62r[62;1H
+[1;63r[62;1HGot request for string descriptor[1;62r[62;1H
+[1;63r[62;1HSet up data: 24 bytes total, 1803550053004200200053007400690063006b0020003200[1;62r[62;1H
+[1;63r[62;1H1803550053004200200053007400690063006b0020003200[1;62r[62;1H
+[1;63r[62;1HThere is data to send, sending one packet...[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HIN STAGE[1;62r[62;1H
+[1;63r[62;1HOUT STAGE[1;62r[62;1H
+[1;63r[62;1HGet status[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1Htick[1;62r[62;1H
+[1;63r[62;1H[8;69H[?25l+----------------------+[9;69H| Leave without reset? |[10;69H|               No     |[11;69H+----------------------+[10;90H[?25l[10;72H[0m(B[7m   Yes  [?12l[?25h[8;1H[0m(BIN STAGE                                                                                    [9;1HIN STAGE                                                                                    [10;1HSETUP STAGE                                                                                 [11;1HGot request for string descriptor                                                           [62;1H[?12l[?25h[?12l[?25h[H[2J[?12l[?25h[?1l>[!p[?3;4l[4l>

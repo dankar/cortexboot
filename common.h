@@ -2,6 +2,8 @@
 #define _COMMON_H_
 
 #include <stdint.h>
+#include <stddef.h>
+#include <wchar.h>
 
 #define BV(b) (1 << b)
 
@@ -9,6 +11,9 @@
 #define MIN(x, y) ((x > y) ? y : x)
 
 uint32_t strlen(const char *str);
+uint32_t wstrlen(const wchar_t *str);
+void *memcpy(void *dst, const void* src, size_t num);
+void *memset(void *dst, int val, size_t num);
 
 inline uint16_t bs16(uint16_t w)
 {

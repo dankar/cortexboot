@@ -30,6 +30,7 @@
 #define RXENDPKT	6
 #define TXENDPKT	7
 #define EP_RLZED	8
+#define ERR_INT		9
 
 // Endpoint status bits
 #define STP 		2
@@ -38,6 +39,8 @@
 #define CMD_CLEAR_BUFFER	0xF2
 // Command validate data
 #define CMD_VALIDATE_BUFFER	0xFA
+// configure
+#define CMD_CONFIGURE_DEVICE    0xD8
 
 // Set Mode command
 #define CMD_SET_MODE 	0xF3
@@ -50,6 +53,10 @@
 
 #define EP0RX		0
 #define EP0TX		1
+#define EP1RX		2
+#define EP1TX		3
+#define EP4RX		8
+#define EP4TX		9
 
 
 // Set address command
@@ -68,6 +75,10 @@
 uint8_t *data_to_send = 0;
 uint8_t num_to_send = 0;
 uint8_t num_sent = 0;
+
+uint8_t *data_to_receive = 0;
+uint8_t num_to_receive = 0;
+uint8_t num_received = 0;
 
 void usb_sie_command(uint8_t command, uint8_t data)
 {
@@ -98,6 +109,36 @@ void usb_sie_command_ep_nd(uint32_t endpoint, uint8_t command)
 	while(!(LPC_USB->USBDevIntSt & BV(CCEMPTY)));
 	LPC_USB->USBDevIntClr = BV(CCEMPTY);
 }
+void sleep()
+{
+	for(int i = 0; i < 10000000; i++);
+}
+
+void usb_realize_endpoint(uint32_t endpoint, uint32_t max_packet_size)
+{
+	LPC_USB->USBReEp |= 1 << endpoint;
+	LPC_USB->USBEpInd = endpoint;
+	LPC_USB->USBMaxPSize = MAX_PACKET_SIZE0;
+
+	uart_print("Waiting for realization of endpoint ");
+	uart_print_int(endpoint);
+	uart_println("...");
+
+	while(!(LPC_USB->USBDevIntSt & BV(EP_RLZED)));
+
+	LPC_USB->USBDevIntClr |= BV(EP_RLZED);
+
+	uart_print("Current endpoints: ");
+	uart_print_hex32(LPC_USB->USBReEp);
+	uart_println("");
+}
+
+void usb_enable_endpoint_interrupt(uint32_t endpoint)
+{
+	LPC_USB->USBEpIntEn |= BV(endpoint);
+}
+
+
 
 
 uint32_t usb_init()
@@ -122,9 +163,9 @@ uint32_t usb_init()
 	set_pin_function(1, 30, 0x02); // VBUS
 
 	set_pin_mode(1, 30, NEITHER);
+	set_pin_mode(1, 18, NEITHER);
 	set_pin_mode(0, 29, NEITHER);
 	set_pin_mode(0, 30, NEITHER);
-
 
 	LPC_USB->USBDevIntClr |= BV(EP_RLZED);
 
@@ -132,30 +173,16 @@ uint32_t usb_init()
 	uart_print_int(LPC_USB->USBReEp);
 	uart_println("");
 
-	LPC_USB->USBEpInd = 0x00;
-	LPC_USB->USBMaxPSize = MAX_PACKET_SIZE0;
-
-	uart_println("Waiting for realization of EP0...");
-
-	while(!(LPC_USB->USBDevIntSt & BV(EP_RLZED)));
-
-	LPC_USB->USBDevIntClr |= BV(EP_RLZED);
-
-	LPC_USB->USBEpInd = 0x01;
-	LPC_USB->USBMaxPSize = MAX_PACKET_SIZE0;
-
-	uart_println("Waiting for realization of EP1..");
-
-	while(!(LPC_USB->USBDevIntSt & BV(EP_RLZED)));
-
-	LPC_USB->USBDevIntClr |= BV(EP_RLZED);
+	usb_realize_endpoint(0x00, MAX_PACKET_SIZE0);
+	usb_realize_endpoint(0x01, MAX_PACKET_SIZE0);
 
 	uart_println("Control endpoints are now realized");
 
 	LPC_USB->USBEpIntClr = 0xffffffff; // Clear all interrupts
 	LPC_USB->USBDevIntClr = 0xffffffff;
 
-	LPC_USB->USBEpIntEn |= BV(0) | BV(1); // enable interrupts from EP0TX and EP0RX
+	usb_enable_endpoint_interrupt(0);
+	usb_enable_endpoint_interrupt(1);
 
 	uart_println("Enabled interrupts");
 
@@ -180,7 +207,7 @@ void usb_clear_endpoint_interrupt(uint8_t ep)
 uint32_t usb_read_endpoint(uint32_t endpoint, uint8_t *data)
 {
 	uint32_t packet_len;
-	LPC_USB->USBCtrl = ((endpoint & 0xF) << 2) | BV(RD_EN);
+	LPC_USB->USBCtrl = ((endpoint & 0xf) << 2) | BV(RD_EN);
 
 	do
 	{
@@ -209,7 +236,7 @@ uint32_t usb_read_endpoint(uint32_t endpoint, uint8_t *data)
 
 void usb_write_endpoint(uint32_t endpoint, uint8_t *data, uint32_t count)
 {
-	LPC_USB->USBCtrl = ((endpoint & 0x0F) << 2) | BV(WR_EN);
+	LPC_USB->USBCtrl = ((endpoint & 0x0f) << 2) | BV(WR_EN);
 
 	LPC_USB->USBTxPLen = count;
 
@@ -227,7 +254,7 @@ void usb_write_endpoint(uint32_t endpoint, uint8_t *data, uint32_t count)
 		data+=4;
 	}
 	LPC_USB->USBCtrl = 0;
-	usb_sie_command_ep_nd(endpoint+1, CMD_VALIDATE_BUFFER);
+	usb_sie_command_ep_nd((endpoint << 1) + 1, CMD_VALIDATE_BUFFER);
 }
 
 void usb_data_in_stage()
@@ -254,25 +281,17 @@ void usb_data_in_stage()
 
 void usb_endpoint0(uint32_t stage)
 {
-	uint8_t control_request[MAX_PACKET_SIZE0];
+	uint8_t control_request[MAX_PACKET_SIZE0] = {0};
 	uint32_t num_recv = 0;
-
-	for(int i = 0; i < MAX_PACKET_SIZE0; i++)
-	{
-		control_request[i] = 0;
-	}
-
 
 	switch(stage)
 	{
 	case SETUP_STAGE:
-		uart_println("SETUP STAGE");
 		data_to_send = 0; num_to_send = 0; num_sent = 0;
 		num_recv = usb_read_endpoint(0x00, control_request);
-		usb_control_request(control_request, num_recv);
+		usb_control_request(control_request, num_recv, 0, 0);
 		if(data_to_send)
 		{
-			uart_println("There is data to send, sending one packet...");
 			usb_data_in_stage();
 		}
 		else
@@ -281,7 +300,6 @@ void usb_endpoint0(uint32_t stage)
 		}
 		break;
 	case IN_STAGE:
-		uart_println("IN STAGE");
 		if(current_control_request.request_type & CONTROL_DEVICE_TO_HOST)
 		{
 			usb_data_in_stage();
@@ -295,17 +313,33 @@ void usb_endpoint0(uint32_t stage)
 		}
 		break;
 	case OUT_STAGE:
-		uart_println("OUT STAGE");
 		if(current_control_request.request_type & CONTROL_DEVICE_TO_HOST)
 		{
-			uart_println("Get status");
 			usb_read_endpoint(0x00, control_request); // get status
 		}
 		else
 		{
-			uart_println("Not implemented");
+			if(data_to_receive)
+			{
+				num_received += usb_read_endpoint(0x00, data_to_receive + num_received);
+				if(num_received >= num_to_receive)
+				{
+					usb_control_request(0, 0, data_to_receive, num_received);
+				}
+			}
+			else
+			{
+				uart_println("ERROR! GOT EXTRA DATA");
+			}
 		}
 	}
+}
+
+uint32_t usb_set_clear_and_status(uint16_t endpoint)
+{
+	LPC_USB->USBEpIntClr = BV(endpoint); // Select endpoint and clear interrupt
+        while((LPC_USB->USBDevIntSt & BV(CDFULL)) == 0);
+	return LPC_USB->USBCmdData;
 }
 
 void usb_poll()
@@ -322,12 +356,11 @@ void usb_poll()
 
 		if(epint & BV(EP0RX))
 		{
-			LPC_USB->USBEpIntClr = BV(EP0RX); // Select endpoint and clear interrupt
-			while((LPC_USB->USBDevIntSt & BV(CDFULL)) == 0);
-			uint32_t status = LPC_USB->USBCmdData;
+			uint32_t status = usb_set_clear_and_status(EP0RX);
 
 			if(status & BV(STP))
 			{
+				// Setup a new control transfer
 				usb_endpoint0(SETUP_STAGE);
 			}
 			else
@@ -338,9 +371,19 @@ void usb_poll()
 
 		if(epint & BV(EP0TX))
 		{
-			LPC_USB->USBEpIntClr = BV(EP0TX);
-			uart_println("Got TX int");
+			usb_set_clear_and_status(EP0TX);
 			usb_endpoint0(IN_STAGE);
+		}
+
+		if(epint & BV(EP1TX))
+		{
+			usb_set_clear_and_status(EP1TX);
+			usb_interrupt();
+		}
+		if(epint & BV(EP1RX))
+		{
+			uart_println("EP4RX!");
+			sleep();
 		}
 		LPC_USB->USBDevIntClr = BV(EP_SLOW);
 	}
@@ -352,29 +395,32 @@ void usb_poll()
 	else if (devintst & BV(FRAME))
 	{
 	}
+	else if (devintst & BV(TXENDPKT))
+	{
+		// Packet was received by USB controller
+	}
 	else
 	{
 		uart_print("Got unknown interupt: ");
 		uart_print_hex32(devintst);
 		uart_println("");
 		LPC_USB->USBDevIntClr = devintst;
+		for(int i = 0; i < 100000000; i++);
 	}
 }
 
 void usb_control_send(uint8_t *data, uint32_t len)
 {
-
-	uart_print("Set up data: ");
-	uart_print_int(len);
-	uart_print(" bytes total, ");
-	uart_print_hex_str(data, len);
-	uart_println("");
-	uart_print_hex_str(data, len);
-	uart_println("");
-
 	data_to_send = data;
 	num_to_send = len;
 	num_sent = 0;
+}
+
+void usb_control_receive(uint8_t *data, uint32_t len)
+{
+	data_to_receive = data;
+	num_to_receive = len;
+	num_received = 0;
 }
 
 void usb_set_address(uint16_t address)
@@ -386,4 +432,14 @@ void usb_set_address(uint16_t address)
 void usb_stall_endpoint(uint16_t endpoint)
 {
 	usb_sie_command(0x40 + endpoint, BV(EP_STATUS_ST));
+}
+
+void usb_enable_endpoint(uint16_t endpoint)
+{
+	usb_sie_command(0x40 + endpoint, 0x0);
+}
+
+void usb_set_configured()
+{
+	usb_sie_command(CMD_CONFIGURE_DEVICE, 0x01);
 }

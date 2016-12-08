@@ -25,6 +25,11 @@ uint8_t uart_read_char()
 	return uart->RBR;
 }
 
+uint8_t uart_char_is_available()
+{
+	return check_bit8(&uart->LSR, RDR);
+}
+
 void uart_print_char(char c)
 {
 	while(!check_bit8(&uart->LSR, THRE));
@@ -85,7 +90,7 @@ void uart_print_hex(char c)
 
 }
 
-void uart_print_hex_str(uint8_t *data, uint32_t len)
+void uart_print_hex_str(const uint8_t *data, uint32_t len)
 {
 	for(int i = 0; i < len; i++)
 	{
