@@ -8,6 +8,7 @@
 #include "usb_impl.h"
 #include "ssp.h"
 #include "common.h"
+#include "wifi.h"
 
 static void system_init(void)
 {
@@ -18,7 +19,7 @@ static void system_init(void)
                         LPC_SC_PCLKSEL0_PCLK_SSP1_DIV1 | LPC_SC_PCLKSEL0_PCLK_DAC_DIV1 |
                         LPC_SC_PCLKSEL0_PCLK_ADC_DIV1 | LPC_SC_PCLKSEL0_PCLK_CAN1_DIV1 |
                         LPC_SC_PCLKSEL0_PCLK_CAN2_DIV1 | LPC_SC_PCLKSEL0_PCLK_ACF_DIV1;*/
-        LPC_SC->PCLKSEL1 = LPC_SC_PCLKSEL1_PCLK_PCB_DIV1 | LPC_SC_PCLKSEL1_PCLK_SYSCON_DIV1;
+        LPC_SC->PCLKSEL1 = LPC_SC_PCLKSEL1_PCLK_PCB_DIV1 | LPC_SC_PCLKSEL1_PCLK_SYSCON_DIV1 | LPC_SC_PCLKSEL1_PCLK_GPIOINT_DIV1;
 			/*LPC_SC_PCLKSEL1_PCLK_QEI_DIV1 | LPC_SC_PCLKSEL1_PCLK_GPIOINT_DIV1 |
 		        LPC_SC_PCLKSEL1_PCLK_PCB_DIV1 | LPC_SC_PCLKSEL1_PCLK_I2C1_DIV1 |
                         LPC_SC_PCLKSEL1_PCLK_SSP0_DIV1 | LPC_SC_PCLKSEL1_PCLK_TIMER2_DIV1 |
@@ -53,10 +54,9 @@ static void system_init(void)
 	uart_print_int(core_f);
 	uart_println(" Hz");
 
-	uart_print_hex32(0x12345678);
-
-	usb_init();
+	//usb_init();
 	ssp_init_spi(16000000);
+	wifi_init();
 }
 
 void delay()
@@ -170,7 +170,7 @@ int main()
 
 	for(;;)
 	{
-		usb_poll();
+//		usb_poll();
 		counter++;
 		if(counter % 1000000 == 0)
 			uart_println("tick");

@@ -1,7 +1,15 @@
+#include "wifi.h"
+
 static void __Default_Handler(void) __attribute__ ((interrupt));
 static void __Default_Handler(void)
 {
 	while (1);
+}
+
+static void __gpio_handler(void) __attribute__ ((interrupt));
+static void __gpio_handler(void)
+{
+	wifi_interrupt();
 }
 
 void NMI_Handler(void) __attribute__ ((interrupt, weak, alias("__Default_Handler")));
@@ -39,7 +47,7 @@ void RTC_IRQHandler(void) __attribute__ ((interrupt, weak, alias("__Default_Hand
 void EINT0_IRQHandler(void) __attribute__ ((interrupt, weak, alias("__Default_Handler")));
 void EINT1_IRQHandler(void) __attribute__ ((interrupt, weak, alias("__Default_Handler")));
 void EINT2_IRQHandler(void) __attribute__ ((interrupt, weak, alias("__Default_Handler")));
-void EINT3_IRQHandler(void) __attribute__ ((interrupt, weak, alias("__Default_Handler")));
+void EINT3_IRQHandler(void) __attribute__ ((interrupt, weak, alias("__gpio_handler")));
 void ADC_IRQHandler(void) __attribute__ ((interrupt, weak, alias("__Default_Handler")));
 void BOD_IRQHandler(void) __attribute__ ((interrupt, weak, alias("__Default_Handler")));
 void USB_IRQHandler(void) __attribute__ ((interrupt, weak, alias("__Default_Handler")));

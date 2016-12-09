@@ -158,10 +158,10 @@ uint32_t usb_init()
 	set_pin_function(1, 18, 0x01); // USB_UP_LED
 	set_pin_function(1, 30, 0x02); // VBUS
 
-	set_pin_mode(1, 30, NEITHER);
-	set_pin_mode(1, 18, NEITHER);
-	set_pin_mode(0, 29, NEITHER);
-	set_pin_mode(0, 30, NEITHER);
+	//set_pin_mode(1, 30, NEITHER);
+	//set_pin_mode(1, 18, NEITHER);
+	//set_pin_mode(0, 29, NEITHER);
+	//set_pin_mode(0, 30, NEITHER);
 
 	LPC_USB->USBDevIntClr |= BV(EP_RLZED);
 

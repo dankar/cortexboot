@@ -70,6 +70,7 @@ void set_pin_mode(uint8_t port, uint8_t pin, uint8_t mode)
 
 	if(pin >= 16)
 		pin -= 16;
+
 	*pinmode &= ~(PINMODE_MASK << (pin * 2));
 	*pinmode |= mode << (pin * 2);
 }
@@ -102,4 +103,11 @@ void pin_clear(uint8_t port, uint8_t pin)
 {
 	LPC_GPIO_TypeDef *gpio = get_port(port);
         gpio->FIOCLR |= BV(pin);
+}
+
+uint8_t pin_read(uint8_t port, uint8_t pin)
+{
+	LPC_GPIO_TypeDef *gpio = get_port(port);
+
+	return (gpio->FIOPIN & BV(pin)) == 0 ? 0 : 1;
 }

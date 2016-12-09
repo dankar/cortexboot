@@ -18,5 +18,6 @@ void set_pin_od(uint8_t port, uint8_t pin, uint8_t od);
 void set_pin_dir(uint8_t port, uint8_t pin, uint8_t dir);
 void pin_set(uint8_t port, uint8_t pin);
 void pin_clear(uint8_t port, uint8_t pin);
+uint8_t pin_read(uint8_t port, uint8_t pin);
 
 #endif

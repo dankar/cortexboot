@@ -20,6 +20,8 @@
 
 // SR register bits
 #define TFE		0
+#define TNF		1
+#define RNE		2
 
 
 void ssp_init_spi(uint32_t freq)
@@ -33,14 +35,35 @@ void ssp_init_spi(uint32_t freq)
 
 	// CPOL = 0, CPHA = 1,
 
-	LPC_SSP0->CR0 = TRANSFER8 | BV(CPHA) | (5 << CLOCK_SHIFT);
+	LPC_SSP0->CR0 = TRANSFER16 | BV(CPHA) | (5 << CLOCK_SHIFT);
 
 	LPC_SSP0->CPSR = 2; // Close enough for now...
 
 	// Go
 	LPC_SSP0->CR1 = BV(SSE);
+
+	for(int i = 0; i < 1024; i++)
+	{
+		uint16_t t = LPC_SSP0->DR;
+	}
 	uart_println("SSP0 initialized for SPI");
 }
 
+void spi_send(uint8_t *data, uint32_t len)
+{
+	for(int i = 0; i < len; i+=2)
+	{
+		while(!(LPC_SSP0->SR & BV(TNF)));
+		LPC_SSP0->DR = data[i] << 8 | data[i+1];
+	}
 
+	while(!(LPC_SSP0->SR & BV(TFE)));
 
+	for(int i = 0; i < len; i+=2)
+	{
+		while(!(LPC_SSP0->SR & BV(RNE)));
+ 		uint16_t response = LPC_SSP0->DR;
+		data[i] = response & 0xff;
+		data[i+1] = (response >> 8) & 0xff;
+	}
+}

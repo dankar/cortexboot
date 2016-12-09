@@ -3,7 +3,7 @@ SEARCH_DIR(.);
 OUTPUT_FORMAT("elf32-littlearm", "elf32-bigarm", "elf32-littlearm");
 OUTPUT_ARCH(arm);
 
-__main_stack_size = 0;
+__main_stack_size = 1024;
 __process_stack_size = 1024;
 
 PROVIDE(__main_stack_size = __main_stack_size);
