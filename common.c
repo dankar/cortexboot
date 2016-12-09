@@ -56,3 +56,38 @@ void *memset(void *dst, int val, size_t num)
 
 	return dst;
 }
+
+void sleep()
+{
+	for(int i = 0; i < 100000; i++);
+}
+
+uint8_t is_upper(uint8_t ascii)
+{
+        return ascii >= 'A' && ascii <= 'Z';
+}
+
+uint8_t to_lower(uint8_t ascii)
+{
+        if(is_upper(ascii))
+                return ascii += 'a' - 'A';
+        else
+                return ascii;
+}
+
+uint8_t is_alpha(uint8_t ascii)
+{
+        if(to_lower(ascii) >= 'a' && to_lower(ascii) <= 'z')
+                return 1;
+        else
+                return 0;
+}
+
+uint8_t is_numeric(uint8_t ascii)
+{
+        if(ascii >= '0' && ascii <= '9')
+                return 1;
+        else
+                return 0;
+}
+

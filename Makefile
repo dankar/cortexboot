@@ -1,5 +1,5 @@
 TOOLCHAIN=arm-none-eabi-
-LINKSCRIPT=test.ld
+LINKSCRIPT=link.ld
 LDFLAGS=-T $(LINKSCRIPT)
 CFLAGS=-c -mcpu=cortex-m3 -mthumb -g -I. -fshort-wchar
 ASFLAGS=-c -mcpu=cortex-m3 -mthumb -g -I.

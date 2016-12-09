@@ -2,6 +2,7 @@
 #include "gpio.h"
 #include "common.h"
 #include "inc/LPC17xx.h"
+#include "hdr/hdr_sc.h"
 
 #define PCUART0 	3
 #define FIFO_ENABLE	0
@@ -115,6 +116,8 @@ void uart_print_hex32(uint32_t h)
 void uart_init(uint32_t core_clock, uint32_t baud)
 {
 	uint16_t divisor = 0;
+
+	LPC_SC->PCLKSEL0 |= LPC_SC_PCLKSEL0_PCLK_UART0_DIV1;
 
 	set_pin_function(0, 2, 0x1); // Set pins to RX/TX
 	set_pin_function(0, 3, 0x1);

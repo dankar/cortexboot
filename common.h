@@ -14,6 +14,12 @@ uint32_t strlen(const char *str);
 uint32_t wstrlen(const wchar_t *str);
 void *memcpy(void *dst, const void* src, size_t num);
 void *memset(void *dst, int val, size_t num);
+uint8_t is_upper(uint8_t ascii);
+uint8_t to_lower(uint8_t ascii);
+uint8_t is_alpha(uint8_t ascii);
+uint8_t is_numeric(uint8_t ascii);
+
+void sleep();
 
 inline uint16_t bs16(uint16_t w)
 {

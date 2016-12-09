@@ -109,10 +109,6 @@ void usb_sie_command_ep_nd(uint32_t endpoint, uint8_t command)
 	while(!(LPC_USB->USBDevIntSt & BV(CCEMPTY)));
 	LPC_USB->USBDevIntClr = BV(CCEMPTY);
 }
-void sleep()
-{
-	for(int i = 0; i < 10000000; i++);
-}
 
 void usb_realize_endpoint(uint32_t endpoint, uint32_t max_packet_size)
 {
