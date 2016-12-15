@@ -3,14 +3,6 @@
 *  cc3000_common.h  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend) 
-* & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout 
-*	----> https://www.adafruit.com/products/1469
-* Adafruit invests time and resources providing this open source code,
-* please support Adafruit and open-source hardware by purchasing
-* products from Adafruit!
-*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
@@ -171,14 +163,7 @@ extern "C" {
 //*****************************************************************************
 //                  Compound Types
 //*****************************************************************************
-// Adafruit CC3k Host Driver Difference
-// Time type compatibility with Arduino
-// Noted 12-12-2014 by tdicola
-#ifdef __AVR__
-typedef UINT32 time_t;  /* KTown: Updated to be compatible with Arduino Time.h */
-#else
 typedef INT32 time_t;
-#endif
 typedef UINT32 clock_t;
 typedef INT32 suseconds_t;
 
@@ -342,24 +327,6 @@ extern UINT16 STREAM_TO_UINT16_f(CHAR* p, UINT16 offset);
 extern UINT32 STREAM_TO_UINT32_f(CHAR* p, UINT16 offset);
 
 
-// Adafruit CC3k Host Driver Difference
-// cc3k_int_poll function is used to try to make missed interrupts less common.
-// Noted 12-12-2014 by tdicola
-
-//*****************************************************************************
-//
-//!  cc3k_int_poll
-//!
-//!  \brief               checks if the interrupt pin is low
-//!                       just in case the hardware missed a falling edge
-//!                       function is in ccspi.cpp
-//
-//*****************************************************************************
-
-extern void cc3k_int_poll();
-
-
-
 //*****************************************************************************
 //                    COMMON MACROs
 //*****************************************************************************
@@ -372,20 +339,14 @@ extern void cc3k_int_poll();
 //This macro is used for copying 32 bit to stream while converting to little endian format.
 #define UINT32_TO_STREAM(_p, _u32)	(UINT32_TO_STREAM_f(_p, _u32))
 //This macro is used for copying a specified value length bits (l) to stream while converting to little endian format.
-// Adafruit CC3k Host Driver Difference
-// Switch loop index to unsigned type to stop compiler warnings.
-// Noted 04-08-2015 by tdicola
-#define ARRAY_TO_STREAM(p, a, l) 	{register UINT16 _i; for (_i = 0; _i < l; _i++) *(p)++ = ((UINT8 *) a)[_i];}
+#define ARRAY_TO_STREAM(p, a, l) 	{register INT16 _i; for (_i = 0; _i < l; _i++) *(p)++ = ((UINT8 *) a)[_i];}
 //This macro is used for copying received stream to 8 bit in little endian format.
 #define STREAM_TO_UINT8(_p, _offset, _u8)	{_u8 = (UINT8)(*(_p + _offset));}
 //This macro is used for copying received stream to 16 bit in little endian format.
 #define STREAM_TO_UINT16(_p, _offset, _u16)	{_u16 = STREAM_TO_UINT16_f(_p, _offset);}
 //This macro is used for copying received stream to 32 bit in little endian format.
 #define STREAM_TO_UINT32(_p, _offset, _u32)	{_u32 = STREAM_TO_UINT32_f(_p, _offset);}
-// Adafruit CC3k Host Driver Difference
-// Switch loop index to unsigned type to stop compiler warnings.
-// Noted 04-08-2015 by tdicola
-#define STREAM_TO_STREAM(p, a, l) 	{register UINT16 _i; for (_i = 0; _i < l; _i++) *(a)++= ((UINT8 *) p)[_i];}
+#define STREAM_TO_STREAM(p, a, l) 	{register INT16 _i; for (_i = 0; _i < l; _i++) *(a)++= ((UINT8 *) p)[_i];}
 
 
 

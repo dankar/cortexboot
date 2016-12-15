@@ -3,14 +3,6 @@
 *  wlan.h  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend) 
-* & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout 
-*	----> https://www.adafruit.com/products/1469
-* Adafruit invests time and resources providing this open source code,
-* please support Adafruit and open-source hardware by purchasing
-* products from Adafruit!
-*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
@@ -39,14 +31,6 @@
 *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
-
-Adapted for use with the Arduino/AVR by KTOWN for Adafruit Industries
-This library works with the Adafruit CC3000 breakout 
-	----> https://www.adafruit.com/products/1469
-Adafruit invests time and resources providing this open source code,
-please support Adafruit and open-source hardware by purchasing
-products from Adafruit!
-
 *****************************************************************************/
 #ifndef __WLAN_H__
 #define	__WLAN_H__
@@ -211,14 +195,10 @@ extern void wlan_stop(void);
 //
 //*****************************************************************************
 #ifndef CC3000_TINY_DRIVER
-// Adafruit CC3k Host Driver Difference
-// Make ssid a const char pointer because it isn't modified and the Adafruit
-// driver code needs it to be const to interface with Arduino's client library.
-// Noted 12-12-2014 by tdicola
-extern INT32 wlan_connect(UINT32 ulSecType, const CHAR *ssid, INT32 ssid_len,
+extern INT32 wlan_connect(UINT32 ulSecType, CHAR *ssid, INT32 ssid_len,
                         UINT8 *bssid, UINT8 *key, INT32 key_len);
 #else
-extern INT32 wlan_connect(const CHAR *ssid, INT32 ssid_len);
+extern INT32 wlan_connect(CHAR *ssid, INT32 ssid_len);
 
 #endif
 

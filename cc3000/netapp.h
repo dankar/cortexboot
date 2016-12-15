@@ -3,14 +3,6 @@
 *  netapp.h  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend) 
-* & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout 
-*	----> https://www.adafruit.com/products/1469
-* Adafruit invests time and resources providing this open source code,
-* please support Adafruit and open-source hardware by purchasing
-* products from Adafruit!
-*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
@@ -43,10 +35,6 @@
 #ifndef __NETAPP_H__
 #define	__NETAPP_H__
 
-// Adafruit CC3k Host Driver Difference
-// Include root Arduino header.
-// Noted 12-12-2014 by tdicola
-#include <Arduino.h>
 #include "data_types.h"
 
 //*****************************************************************************
@@ -350,11 +338,6 @@ INT32 netapp_set_debug_level(UINT32 ulLevel);
 #ifdef	__cplusplus
 }
 #endif // __cplusplus
-
-// Adafruit CC3k Host Driver Difference
-// Define reference to CC3k debug printer object.
-// Noted 12-12-2014 by tdicola
-extern Print* CC3KPrinter;
 
 #endif	// __NETAPP_H__
 

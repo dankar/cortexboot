@@ -3,14 +3,6 @@
 *  hci.c  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend) 
-* & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout 
-*	----> https://www.adafruit.com/products/1469
-* Adafruit invests time and resources providing this open source code,
-* please support Adafruit and open-source hardware by purchasing
-* products from Adafruit!
-*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
@@ -50,10 +42,7 @@
 
 #include "cc3000_common.h"
 #include "hci.h"
-// Adafruit CC3k Host Driver Difference
-// Reference our SPI driver in the parent folder.
-// Noted 12-12-2014 by tdicola
-#include "../ccspi.h"
+#include "spi.h"
 #include "evnt_handler.h"
 #include "wlan.h"
 
@@ -204,11 +193,6 @@ void hci_patch_send(UINT8 ucOpcode, UINT8 *pucBuff, CHAR *patch, UINT16 usDataLe
 
 		while (usDataLength)
 		{
-			// Adafruit CC3k Host Driver Difference
-			// Check for missed interrupt to try to make code more reliable.
-			// Noted 12-12-2014 by tdicola
-			cc3k_int_poll();
-
 			if (usDataLength <= SL_PATCH_PORTION_SIZE)
 			{
 				usTransLength = usDataLength;

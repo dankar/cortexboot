@@ -3,14 +3,6 @@
 *  evnt_handler.c  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend)
-* & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout
-*	----> https://www.adafruit.com/products/1469
-* Adafruit invests time and resources providing this open source code,
-* please support Adafruit and open-source hardware by purchasing
-* products from Adafruit!
-*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
@@ -58,11 +50,7 @@
 #include "wlan.h"
 #include "socket.h"
 #include "netapp.h"
-// Adafruit CC3k Host Driver Difference
-// Reference our SPI driver in the parent folder, and include debug header.
-// Noted 12-12-2014 by tdicola
-#include "../ccspi.h"
-#include "debug.h"
+#include "spi.h"
 
 
 
@@ -251,11 +239,6 @@ UINT8 * hci_event_handler(void *pRetParams, UINT8 *from, UINT8 *fromlen)
 
 	while (1)
 	{
-		// Adafruit CC3k Host Driver Difference
-		// Call cc3k_int_poll to try to keep from missing interrupts.
-		// Noted 12-12-2014 by tdicola
-		cc3k_int_poll();
-
 		if (tSLInformation.usEventOrDataReceived != 0)
 		{				
 			pucReceivedData = (tSLInformation.pucReceivedData);
@@ -267,10 +250,7 @@ UINT8 * hci_event_handler(void *pRetParams, UINT8 *from, UINT8 *fromlen)
 					usReceivedEventOpcode);
 				pucReceivedParams = pucReceivedData + HCI_EVENT_HEADER_SIZE;		
 				RecvParams = pucReceivedParams;
-				// Adafruit CC3k Host Driver Difference
-				// Explicit cast of pRetParams to UINT8* to fix compiler warning.
-				// Noted 12-12-2014 by tdicola
-				RetParams = (UINT8 *)pRetParams;
+				RetParams = pRetParams;
 
 				// In case unsolicited event received - here the handling finished
 				if (hci_unsol_event_handler((CHAR *)pucReceivedData) == 0)
@@ -530,12 +510,6 @@ INT32 hci_unsol_event_handler(CHAR *event_hdr)
 
 	STREAM_TO_UINT16(event_hdr, HCI_EVENT_OPCODE_OFFSET,event_type);
 
-	// Adafruit CC3k Host Driver Difference
-	// Extra debug output.
-	// Noted 12-12-2014 by tdicola
-	DEBUGPRINT_F("\tHCI_UNSOL_EVT: ");
-	DEBUGPRINT_HEX16(event_type);
-
 	if (event_type & HCI_EVNT_UNSOL_BASE)
 	{
 		switch(event_type)
@@ -634,18 +608,14 @@ INT32 hci_unsol_event_handler(CHAR *event_hdr)
 			break;
 		case HCI_EVNT_BSD_TCP_CLOSE_WAIT:
 			{
-			  // Adafruit CC3k Host Driver Difference
-			  // Extra debug output.
-			  // Noted 12-12-2014 by tdicola
-			  DEBUGPRINT_F("\tTCP Close Wait\n\r");
-			  data = (CHAR*)(event_hdr) + HCI_EVENT_HEADER_SIZE;
-			  if( tSLInformation.sWlanCB )
-			    {
-				  //data[0] represents the socket id, for which FIN was received by remote.
-				  //Upon receiving this event, the user can close the socket, or else the 
-				  //socket will be closded after inacvitity timeout (by default 60 seconds)
-			      tSLInformation.sWlanCB(event_type, data, 1);
-			    }
+				data = (CHAR *)(event_hdr) + HCI_EVENT_HEADER_SIZE;
+				if( tSLInformation.sWlanCB )
+				{
+					//data[0] represents the socket id, for which FIN was received by remote.
+					//Upon receiving this event, the user can close the socket, or else the 
+					//socket will be closded after inacvitity timeout (by default 60 seconds)
+					tSLInformation.sWlanCB(event_type, data, 1);
+				}
 			}
             break;
             
@@ -670,26 +640,21 @@ INT32 hci_unsol_event_handler(CHAR *event_hdr)
 		CHAR *pArg;
 		INT32 status;
 
-		// Adafruit CC3k Host Driver Difference
-		// Extra debug output.
-		// Noted 12-12-2014 by tdicola
-		DEBUGPRINT_F("\tSEND event response\n\r");
+		pArg = M_BSD_RESP_PARAMS_OFFSET(event_hdr);
+		STREAM_TO_UINT32(pArg, BSD_RSP_PARAMS_STATUS_OFFSET,status);
 
-                pArg = M_BSD_RESP_PARAMS_OFFSET(event_hdr);
-                STREAM_TO_UINT32(pArg, BSD_RSP_PARAMS_STATUS_OFFSET,status);
+		if (ERROR_SOCKET_INACTIVE == status)
+		{
+			// The only synchronous event that can come from SL device in form of 
+			// command complete is "Command Complete" on data sent, in case SL device 
+			// was unable to transmit
+			STREAM_TO_UINT8(event_hdr, HCI_EVENT_STATUS_OFFSET, tSLInformation.slTransmitDataError);
+			update_socket_active_status(M_BSD_RESP_PARAMS_OFFSET(event_hdr));
 
-                if (ERROR_SOCKET_INACTIVE == status)
-                {
-                    // The only synchronous event that can come from SL device in form of
-                    // command complete is "Command Complete" on data sent, in case SL device
-                    // was unable to transmit
-                    STREAM_TO_UINT8(event_hdr, HCI_EVENT_STATUS_OFFSET, tSLInformation.slTransmitDataError);
-                    update_socket_active_status(M_BSD_RESP_PARAMS_OFFSET(event_hdr));
-
-                    return (1);
-                }
-                else
-                    return (0);
+			return (1);
+		}
+		else
+			return (0);
 	}
 
 	//handle a case where unsolicited event arrived, but was not handled by any of the cases above

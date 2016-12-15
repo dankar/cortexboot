@@ -3,14 +3,6 @@
 *  wlan.c  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend)
-* & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout
-*	----> https://www.adafruit.com/products/1469
-* Adafruit invests time and resources providing this open source code,
-* please support Adafruit and open-source hardware by purchasing
-* products from Adafruit!
-
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
@@ -50,15 +42,12 @@
 #include <string.h>
 #include "wlan.h"
 #include "hci.h"
-// Adafruit CC3k Host Driver Difference
-// Reference our SPI driver and include debug header.
-// Noted 12-12-2014 by tdicola
-#include "../ccspi.h"
+#include "spi.h"
 #include "socket.h"
 #include "nvmem.h"
 #include "security.h"
 #include "evnt_handler.h"
-#include "debug.h"
+
 
 volatile sSimplLinkInformation tSLInformation;
 
@@ -309,14 +298,10 @@ void wlan_start(UINT16 usPatchesAvailableAtHost)
 		{
 		}
 	}
-	// Adafruit CC3k Host Driver Difference
-	// Extra debug output.
-	// Noted 12-12-2014 by tdicola
-	DEBUGPRINT_F("SimpleLink start\n\r");
+
 	SimpleLink_Init_Start(usPatchesAvailableAtHost);
 
 	// Read Buffer's size and finish
-	DEBUGPRINT_F("Read buffer\n\r");
 	hci_command_send(HCI_CMND_READ_BUFFER_SIZE, tSLInformation.pucTxCommandBuffer, 0);
 	SimpleLinkWaitEvent(HCI_CMND_READ_BUFFER_SIZE, 0);
 }
@@ -388,11 +373,7 @@ void wlan_stop(void)
 //*****************************************************************************
 
 #ifndef CC3000_TINY_DRIVER
-// Adafruit CC3k Host Driver Difference
-// Make ssid a const char pointer because it isn't modified and the Adafruit
-// driver code needs it to be const to interface with Arduino's client library.
-// Noted 12-12-2014 by tdicola
-INT32 wlan_connect(UINT32 ulSecType, const CHAR *ssid, INT32 ssid_len,
+INT32 wlan_connect(UINT32 ulSecType, CHAR *ssid, INT32 ssid_len,
 	UINT8 *bssid, UINT8 *key, INT32 key_len)
 {
 	INT32 ret;
@@ -440,11 +421,7 @@ INT32 wlan_connect(UINT32 ulSecType, const CHAR *ssid, INT32 ssid_len,
 	return(ret);
 }
 #else
-// Adafruit CC3k Host Driver Difference
-// Make ssid a const char pointer because it isn't modified and the Adafruit
-// driver code needs it to be const to interface with Arduino's client library.
-// Noted 12-12-2014 by tdicola
-INT32 wlan_connect(const CHAR *ssid, INT32 ssid_len)
+INT32 wlan_connect(CHAR *ssid, INT32 ssid_len)
 {
 	INT32 ret;
 	UINT8 *ptr;
@@ -709,13 +686,7 @@ INT32 wlan_add_profile(UINT32 ulSecType,
 		}
 
 		break;
-
-		// Adafruit CC3k Host Driver Difference
-		// Break out of function for unknown security type to prevent compiler warnings.
-		// Noted 04-08-2015 by tdicola
-	default:
-		return -1;
-	}
+	}    
 
 	// Initiate a HCI command
 	hci_command_send(HCI_CMND_WLAN_IOCTL_ADD_PROFILE,

@@ -3,14 +3,6 @@
 *  socket.h  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend) 
-* & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout 
-*	----> https://www.adafruit.com/products/1469
-* Adafruit invests time and resources providing this open source code,
-* please support Adafruit and open-source hardware by purchasing
-* products from Adafruit!
-*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
@@ -43,10 +35,6 @@
 #ifndef __SOCKET_H__
 #define __SOCKET_H__
 
-// Adafruit CC3k Host Driver Difference
-// Need to reference types or else compilation will fail.
-// Noted 12-12-2014 by tdicola
-#include "data_types.h"
 
 //*****************************************************************************
 //
@@ -148,13 +136,6 @@ typedef INT32 __fd_mask;
 #define __FDELT(d)              ((d) / __NFDBITS)
 #define __FDMASK(d)             ((__fd_mask) 1 << ((d) % __NFDBITS))
 
-// Adafruit CC3k Host Driver Difference
-// Need to unset this if set or else compilation fails on the Arduino Due (newlib quirk?)
-// Noted 1-24-2015 by tdicola
-#ifdef fd_set
-#undef fd_set  // for compatibility with newlib, which defines fd_set
-#endif
-
 // fd_set for select and pselect.
 typedef struct
 {
@@ -176,21 +157,6 @@ typedef struct
 #define __FD_ISSET(d, set)     (__FDS_BITS (set)[__FDELT (d)] & __FDMASK (d))
 
 // Access macros for 'fd_set'.
-// Adafruit CC3k Host Driver Difference
-// Need to unset these macros if set or else compilation fails on the Arduino Due (newlib quirk?)
-// Noted 1-24-2015 by tdicola
-#ifdef FD_SET
-#undef FD_SET
-#endif
-#ifdef FD_CLR
-#undef FD_CLR
-#endif
-#ifdef FD_ISSET
-#undef FD_ISSET
-#endif
-#ifdef FD_ZERO
-#undef FD_ZERO
-#endif
 #define FD_SET(fd, fdsetp)      __FD_SET (fd, fdsetp)
 #define FD_CLR(fd, fdsetp)      __FD_CLR (fd, fdsetp)
 #define FD_ISSET(fd, fdsetp)    __FD_ISSET (fd, fdsetp)
@@ -376,11 +342,7 @@ extern INT32 listen(INT32 sd, INT32 backlog);
 //
 //*****************************************************************************
 #ifndef CC3000_TINY_DRIVER 
-// Adafruit CC3k Host Driver Difference
-// Make hostname a const char pointer because it isn't modified and the Adafruit
-// driver code needs it to be const to interface with Arduino's client library.
-// Noted 12-12-2014 by tdicola
-extern INT16 gethostbyname(const CHAR * hostname, UINT16 usNameLen, UINT32* out_ip_addr);
+extern INT16 gethostbyname(CHAR * hostname, UINT16 usNameLen, UINT32* out_ip_addr);
 #endif
 
 

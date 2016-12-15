@@ -1,17 +1,7 @@
-#define SEND_TIMEOUT_MS (30 * 1000)
-
 /*****************************************************************************
 *
 *  socket.c  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
-*
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend) 
-* & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout 
-*	----> https://www.adafruit.com/products/1469
-* Adafruit invests time and resources providing this open source code,
-* please support Adafruit and open-source hardware by purchasing
-* products from Adafruit!
 *
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
@@ -57,7 +47,6 @@
 #include "socket.h"
 #include "evnt_handler.h"
 #include "netapp.h"
-#include "debug.h"
 
 
 
@@ -107,7 +96,6 @@
 extern UINT8 localIP[4];
 #endif
 
-
 //*****************************************************************************
 //
 //! HostFlowControlConsumeBuff
@@ -128,14 +116,6 @@ INT16 HostFlowControlConsumeBuff(INT16 sd)
 {
 #ifndef SEND_NON_BLOCKING
 	/* wait in busy loop */
-
-// Adafruit CC3k Host Driver Difference
-// Allow defining a send timeout period.
-// Noted 12-12-2014 by tdicola
-#ifdef SEND_TIMEOUT_MS
-	unsigned long startTime = millis();
-#endif
-
 	do
 	{
 		// In case last transmission failed then we will return the last failure 
@@ -150,46 +130,6 @@ INT16 HostFlowControlConsumeBuff(INT16 sd)
 
 		if(SOCKET_STATUS_ACTIVE != get_socket_active_status(sd))
 			return -1;
-
-// Adafruit CC3k Host Driver Difference
-// Implementation of send timeout.
-// Noted 12-12-2014 by tdicola
-#ifdef SEND_TIMEOUT_MS
-		if ((millis() - startTime) > SEND_TIMEOUT_MS)
-		{
-			return -3; /* Timeout */
-		}
-#endif
-
-		// Adafruit CC3k Host Driver Difference
-		// Poll CC3k for available bytes with select during buffer wait.
-		// Noted 04-06-2015 by tdicola
-		// This is a bizarre change that majorly helps reliability in the later
-		// Arduino 1.6.x IDE and its newer avr-gcc toolchain.  Without the select
-		// call the CC3k will frequently get stuck in this loop waiting for a buffer
-		// to be free to send data and the CC3k never sending the async event
-		// that buffers are free.  It is unclear why calling select fixes this
-		// issue but my suspicion is it might be making the CC3k realize there
-		// are free buffers and it passing the async event along that will
-		// eventually break out of this loop.  I tried to check if it was just a
-		// timing issue by substituting a small delay for the select call, but 
-		// the problem persists.  Calling select appears to be necessary to keep
-		// the CC3k from hitting some race condition/issue here.
-		if (tSLInformation.usNumberOfFreeBuffers == 0) {
-			// Do a select() call on the socket to see if data is available to read.
-			timeval timeout;
-			fd_set fd_read;
-			memset(&fd_read, 0, sizeof(fd_read));
-			FD_SET(sd, &fd_read);
-			timeout.tv_sec = 0;
-			timeout.tv_usec = 5000;
-			select(sd+1, &fd_read, NULL, NULL, &timeout);
-			// Note the results of the select are ignored for now.  Attempts to
-			// have smart behavior like returning an error when there is data
-			// to read and no free buffers for sending just seem to cause more
-			// problems particularly with server code examples.
-		}
-
 	} while(0 == tSLInformation.usNumberOfFreeBuffers);
 
 	tSLInformation.usNumberOfFreeBuffers--;
@@ -380,11 +320,8 @@ INT32 accept(INT32 sd, sockaddr *addr, socklen_t *addrlen)
 
 
 	// need specify return parameters!!!
-	// Adafruit CC3k Host Driver Difference
-	// Bug fix to prevent writing to null memory pointer.
-	// Noted 12-12-2014 by tdicola
-	if (addr) memcpy(addr, &tAcceptReturnArguments.tSocketAddress, ASIC_ADDR_LEN);
-	if (addrlen) *addrlen = ASIC_ADDR_LEN;
+	memcpy(addr, &tAcceptReturnArguments.tSocketAddress, ASIC_ADDR_LEN);
+	*addrlen = ASIC_ADDR_LEN;
 	errno = tAcceptReturnArguments.iStatus; 
 	ret = errno;
 
@@ -520,11 +457,7 @@ INT32 listen(INT32 sd, INT32 backlog)
 //*****************************************************************************
 
 #ifndef CC3000_TINY_DRIVER
-// Adafruit CC3k Host Driver Difference
-// Make hostname a const char pointer because it isn't modified and the Adafruit
-// driver code needs it to be const to interface with Arduino's client library.
-// Noted 12-12-2014 by tdicola
-INT16 gethostbyname(const CHAR * hostname, UINT16 usNameLen, 
+INT16 gethostbyname(CHAR * hostname, UINT16 usNameLen, 
 	UINT32* out_ip_addr)
 {
 	tBsdGethostbynameParams ret;
@@ -950,39 +883,16 @@ INT16 simple_link_recv(INT32 sd, void *buf, INT32 len, INT32 flags, sockaddr *fr
 	// Since we are in blocking state - wait for event complete
 	SimpleLinkWaitEvent(opcode, &tSocketReadEvent);
 
-	// Adafruit CC3k Host Driver Difference
-	// Extra debug output.
-	// Noted 12-12-2014 by tdicola
-	DEBUGPRINT_F("\n\r\tRecv'd data... Socket #");
-	DEBUGPRINT_DEC(tSocketReadEvent.iSocketDescriptor);
-	DEBUGPRINT_F(" Bytes: 0x");
-	DEBUGPRINT_HEX(tSocketReadEvent.iNumberOfBytes);
-	DEBUGPRINT_F(" Flags: 0x");
-	DEBUGPRINT_HEX(tSocketReadEvent.uiFlags);
-	DEBUGPRINT_F("\n\r");
-
 	// In case the number of bytes is more then zero - read data
 	if (tSocketReadEvent.iNumberOfBytes > 0)
 	{
 		// Wait for the data in a synchronous way. Here we assume that the bug is 
 		// big enough to store also parameters of receive from too....
-		// Adafruit CC3k Host Driver Difference
-		// Fix compiler error with explicit cast from void to UINT8 pointer.
-		// Noted 12-12-2014 by tdicola
-		SimpleLinkWaitData((UINT8*)buf, (UINT8 *)from, (UINT8 *)fromlen);
+		SimpleLinkWaitData(buf, (UINT8 *)from, (UINT8 *)fromlen);
 	}
 
 	errno = tSocketReadEvent.iNumberOfBytes;
 
-// Adafruit CC3k Host Driver Difference
-// Extra debug output.
-// Noted 12-12-2014 by tdicola
-#if (DEBUG_MODE == 1)
-	for (UINT8 i=0; i<errno; i++) {
-	  uart_putchar(((UINT8 *)buf)[i]);
-	}
-#endif
-	
 	return(tSocketReadEvent.iNumberOfBytes);
 }
 
@@ -1113,10 +1023,7 @@ INT16 simple_link_send(INT32 sd, const void *buf, INT32 len, INT32 flags,
 
 	default:
 		{
-			// Adafruit CC3k Host Driver Difference
-			// Break out of function for unknown operation to prevent compiler warnings.
-			// Noted 04-08-2015 by tdicola
-			return -1;
+			break;
 		}
 	}
 

@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-*  data_types.h  - CC3000 Host Driver Implementation.
+*  spi.h  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -32,8 +32,17 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 *****************************************************************************/
-#ifndef __DATA_TYPES__
-#define __DATA_TYPES__
+
+
+#ifndef __SPI_H__
+#define __SPI_H__
+
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+
+
 
 //*****************************************************************************
 //
@@ -41,67 +50,57 @@
 // have a C binding.
 //
 //*****************************************************************************
-#ifdef	__cplusplus
+#ifdef  __cplusplus
 extern "C" {
 #endif
 
+typedef void (*gcSpiHandleRx)(void *p);
+typedef void (*gcSpiHandleTx)(void);
 
-#ifndef NULL
-#define NULL        		(0)
-#endif
+extern unsigned char wlan_tx_buffer[];
 
-#ifndef FALSE
-#define FALSE       		(0)
-#endif
+#define MOSI_MISO_PORT_SEL    P1SEL1
+#define MOSI_MISO_PORT_SEL2   P1SEL0
+#define SPI_MISO_PIN         BIT6
+#define SPI_MOSI_PIN         BIT7
 
-#ifndef TRUE
-#define TRUE        		(!FALSE)
-#endif
+#define SPI_CLK_PORT_SEL    P2SEL1
+#define SPI_CLK_PORT_SEL2   P2SEL0
+#define SPI_CLK_PIN         BIT2
 
-#ifndef OK
-#define OK          		(0)
-#endif
-
-#ifndef _INT8
-#define _INT8
-typedef signed char   		INT8;
-#endif
-
-#ifndef _UINT8
-#define _UINT8
-typedef unsigned char   	UINT8;
-#endif
-
-#ifndef _INT16
-#define _INT16
-typedef signed short  		INT16;
-#endif
-
-#ifndef _UINT16
-#define _UINT16
-typedef unsigned short   	UINT16;
-#endif
-
-#ifndef _BOOLEAN
-#define _BOOLEAN
-typedef unsigned char   	BOOLEAN;
-#endif
-
-#ifndef _INT32
-#define _INT32
-typedef signed long   		INT32;
-#endif
-
-#ifndef _UINT32
-#define _UINT32
-typedef unsigned long   	UINT32;
-#endif
-
-typedef int             	INT;
-typedef char            	CHAR;
-
-#ifdef	__cplusplus
+#define SPI_IRQ_PORT    P2IE
+#define SPI_IFG_PORT    P2IFG
+#define SPI_IRQ_PIN     BIT3
+//*****************************************************************************
+//
+// Prototypes for the APIs.
+//
+//*****************************************************************************
+extern void SpiOpen(gcSpiHandleRx pfRxHandler);
+extern void SpiClose(void);
+extern long SpiWrite(unsigned char *pUserBuffer, unsigned short usLength);
+extern void SpiResumeSpi(void);
+extern void SpiConfigureHwMapping(	unsigned long ulPioPortAddress,
+									unsigned long ulPort, 
+									unsigned long ulSpiCs, 
+									unsigned long ulPortInt, 
+									unsigned long uluDmaPort,
+									unsigned long ulSsiPortAddress,
+									unsigned long ulSsiTx,
+									unsigned long ulSsiRx,
+									unsigned long ulSsiClck);
+extern void SpiCleanGPIOISR(void);
+extern int init_spi(void);
+extern long TXBufferIsEmpty(void);
+extern long RXBufferIsEmpty(void);
+//*****************************************************************************
+//
+// Mark the end of the C bindings section for C++ compilers.
+//
+//*****************************************************************************
+#ifdef  __cplusplus
 }
-#endif /* __cplusplus */
+#endif // __cplusplus
 
-#endif /* __DATA_TYPE__ */
+#endif
+
