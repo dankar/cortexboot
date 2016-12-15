@@ -40,12 +40,11 @@
 //
 //*****************************************************************************
 
-#include <stdio.h>
-#include <string.h>
 #include "nvmem.h"
 #include "hci.h"
 #include "socket.h"
 #include "evnt_handler.h"
+#include <common.h>
 
 //*****************************************************************************
 //

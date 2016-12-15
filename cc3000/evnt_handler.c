@@ -51,6 +51,7 @@
 #include "socket.h"
 #include "netapp.h"
 #include "spi.h"
+#include <wifi.h>
 
 
 
@@ -209,8 +210,7 @@ void hci_unsol_handle_patch_request(CHAR *event_hdr)
 }
 
 
-
-//*****************************************************************************
+/**/
 //
 //!  hci_event_handler
 //!
@@ -223,7 +223,6 @@ void hci_unsol_handle_patch_request(CHAR *event_hdr)
 //!  @brief          Parse the incoming events packets and issues corresponding
 //!                  event handler from global array of handlers pointers
 //
-//*****************************************************************************
 
 
 UINT8 * hci_event_handler(void *pRetParams, UINT8 *from, UINT8 *fromlen)
@@ -236,12 +235,17 @@ UINT8 * hci_event_handler(void *pRetParams, UINT8 *from, UINT8 *fromlen)
 	UINT8 * RecvParams;
 	UINT8 *RetParams;
 
+	uart_println("Waiting for event...");
 
 	while (1)
 	{
 		if (tSLInformation.usEventOrDataReceived != 0)
-		{				
+		{
+			uart_print("Got event! ");
 			pucReceivedData = (tSLInformation.pucReceivedData);
+
+			uart_print_hex_str(pucReceivedData, 15);
+			uart_println("");
 
 			if (*pucReceivedData == HCI_TYPE_EVNT)
 			{
@@ -470,7 +474,7 @@ UINT8 * hci_event_handler(void *pRetParams, UINT8 *from, UINT8 *fromlen)
 
 			tSLInformation.usEventOrDataReceived = 0;
 
-			SpiResumeSpi();
+			wifi_enable_irq();
 
 			// Since we are going to TX - we need to handle this event after the 
 			// ResumeSPi since we need interrupts
@@ -660,6 +664,7 @@ INT32 hci_unsol_event_handler(CHAR *event_hdr)
 	//handle a case where unsolicited event arrived, but was not handled by any of the cases above
 	if ((event_type != tSLInformation.usRxEventOpcode) && (event_type != HCI_EVNT_PATCHES_REQ))
 	{
+		uart_println("Unsolicited...ignoring");
 		return(1);
 	}
 
@@ -699,7 +704,7 @@ INT32 hci_unsolicited_event_handler(void)
 				tSLInformation.usEventOrDataReceived = 0;
 
 				res = 1;
-				SpiResumeSpi();
+				wifi_enable_irq();
 			}
 		}
 	}

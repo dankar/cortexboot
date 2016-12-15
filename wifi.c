@@ -5,6 +5,9 @@
 #include "common.h"
 #include "inc/LPC17xx.h"
 
+#include "cc3000/wlan.h"
+#include "cc3000/hci.h"
+
 #define EXTMODE0	0
 #define EXTMODE1	1
 #define EXTMODE2	2
@@ -15,26 +18,38 @@
 void wifi_select(uint8_t select)
 {
 	if(select)
+	{
+		uart_println("Selecting slave");
 		pin_clear(0, 16);
+	}
 	else
+	{
+		uart_println("Deselecting slave");
 		pin_set(0, 16);
+	}
 }
 
 void wifi_vben(uint8_t vben)
 {
 	if(vben)
 	{
+		uart_println("Setting vben...");
 		pin_set(1, 10);
 	}
 	else
 	{
+		uart_println("Desetting vben...");
 		pin_clear(1, 10);
 	}
 }
 
-uint8_t wifi_irq_status()
+long wifi_irq_status()
 {
-	return pin_read(2, 13);
+	uint8_t p = pin_read(2, 13);
+	uart_print("Reading IRQ status: ");
+	uart_print_int(p);
+	uart_println(".");
+	return p;
 }
 
 void wifi_pin_setup()
@@ -55,16 +70,12 @@ void wifi_pin_setup()
 	NVIC->ISER[0] = BV(ISE_EINT3); // enable the interrupt
 
 	wifi_select(0);
-	wifi_vben(0);
-	uart_println("Waiting...");
-	sleep();
-	sleep();
-	sleep();
-	sleep();
-	sleep();
+	wifi_vben(1);
 }
 
-volatile uint8_t command_in_progress = 0;
+volatile uint8_t wifi_irq_enabled = 1;
+
+void IntSpiGPIOHandler(void);
 
 void wifi_interrupt()
 {
@@ -74,9 +85,94 @@ void wifi_interrupt()
 	}
 	LPC_SC->EXTINT = BV(EXTMODE3); // Ack interrupt
 	uart_println("Got wifi IRQ");
-	if(command_in_progress)
+	if(!wifi_irq_enabled)
 	{
-		uart_println("Currently sending command, ignoring");
+		return;
+	}
+
+	IntSpiGPIOHandler();
+}
+
+void wifi_enable_irq()
+{
+	uart_println("Enabling interrupts");
+	NVIC->ISER[0] = BV(ISE_EINT3); // enable the interrupt
+}
+
+void wifi_disable_irq()
+{
+	uart_println("Disabling interrupts");
+	NVIC->ICER[0] = BV(ISE_EINT3); // disable interrupt
+}
+
+char *send_patch(unsigned long *length)
+{
+	*length = 0;
+	return 0;
+}
+
+volatile unsigned long ulSmartConfigFinished, ulCC3000Connected,ulCC3000DHCP,
+OkToDoShutDown, ulCC3000DHCP_configured;
+volatile unsigned char ucStopSmartConfig;
+volatile long ulSocket;
+
+#define HCI_EVENT_MASK                                 (HCI_EVNT_WLAN_KEEPALIVE | HCI_EVNT_WLAN_UNSOL_INIT | HCI_EVNT_WLAN_ASYNC_PING_REPORT)
+#define NETAPP_IPCONFIG_MAC_OFFSET                     (20)
+
+void CC3000_UsynchCallback(long lEventType, char * data, unsigned char length)
+{
+	uart_println("Callback...");
+	if (lEventType == HCI_EVNT_WLAN_ASYNC_SIMPLE_CONFIG_DONE)
+	{
+        	ulSmartConfigFinished = 1;
+        	ucStopSmartConfig     = 1;
+		uart_println("Simple config done");
+    	}
+
+    	if (lEventType == HCI_EVNT_WLAN_UNSOL_CONNECT)
+    	{
+    		ulCC3000Connected = 1;
+		uart_println("Connected");
+    	}
+
+   	if (lEventType == HCI_EVNT_WLAN_UNSOL_DISCONNECT)
+    	{
+        	ulCC3000Connected = 0;
+        	ulCC3000DHCP      = 0;
+        	ulCC3000DHCP_configured = 0;
+		uart_println("Disconnected");
+    	}
+
+   	if(lEventType == HCI_EVNT_WLAN_UNSOL_DHCP)
+    	{
+        //
+        // Notes: 
+        // 1) IP config parameters are received swapped
+        // 2) IP config parameters are valid only if status is OK, 
+        // i.e. ulCC3000DHCP becomes 1
+        //
+
+        //
+        // Only if status is OK, the flag is set to 1 and the 
+        // addresses are valid.
+        //
+        	if ( *(data + NETAPP_IPCONFIG_MAC_OFFSET) == 0)
+        	{
+            		//sprintf((char*)pucCC3000_Rx_Buffer,"IP:%d.%d.%d.%d\f\r", data[3],data[2], data[1], data[0]);
+			ulCC3000DHCP = 1;
+			uart_println("DHCP done");
+        	}
+        	else
+        	{
+			ulCC3000DHCP = 0;
+			uart_println("Lost dhcp");
+		}
+	}
+
+	if (lEventType == HCI_EVENT_CC3000_CAN_SHUT_DOWN)
+	{
+		OkToDoShutDown = 1;
+		uart_println("Can shutdown");
 	}
 }
 
@@ -86,41 +182,22 @@ void wifi_init()
 
 	wifi_pin_setup();
 
-	irq = wifi_irq_status();
+	uart_println("init...");
+	wlan_init(CC3000_UsynchCallback, send_patch, send_patch, send_patch, wifi_irq_status, wifi_enable_irq, wifi_disable_irq, wifi_vben);
 
-	wifi_vben(1);
+	uart_println("start...");
+	wlan_start(0);
 
-	if(irq)
-	{
-		uart_println("IRQ was high, waiting for it to go low...");
-		while(wifi_irq_status());
-	}
-	else
-	{
-		uart_println("IRQ was low, waiting for it to go high...");
-		while(!wifi_irq_status());
-		uart_println("...and now low");
-		while(wifi_irq_status());
-	}
+	uart_println("Start done!");
+	wifi_disable_irq();
+	for(;;);
 
-	wifi_select(1);
-	command_in_progress = 1;
-	sleep(); // Should "at least 50us"
+	uart_println("event mask...");
+	wlan_set_event_mask(HCI_EVENT_MASK);
 
-	uint8_t command[] = {0x01, 0x00, 0x05, 0x00};
-	spi_send(command, 4);
-	uart_print("Response: ");
-	uart_print_hex_str(command, 4);
-	uart_println("");
-	sleep();
-	uint8_t data[] = { 0x00, 0x01, 0x00, 0x40, 0x01, 0x00 };
-	spi_send(data, 6);
-	uart_print("Response: ");
-	uart_print_hex_str(data, 6);
-	uart_println("");
-	command_in_progress = 0;
-	wifi_select(0);
+	uart_println("connect...");
+	wlan_connect(WLAN_SEC_WPA2, "data", 4, NULL, "bajskorv123", 11);
 
-	uart_println("Done!");
+	uart_println("done...");
 }
 

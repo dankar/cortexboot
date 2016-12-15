@@ -40,13 +40,12 @@
 //
 //*****************************************************************************
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include "errno.h"
 #include "hci.h"
 #include "socket.h"
 #include "evnt_handler.h"
 #include "netapp.h"
+#include <common.h>
 
 
 

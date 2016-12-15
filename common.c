@@ -11,6 +11,11 @@ void set_bit32(volatile uint32_t *reg, uint8_t bit);
 void clear_bit32(volatile uint32_t *reg, uint8_t bit);
 uint16_t bs16(uint16_t w);
 
+void delay(uint32_t cyc)
+{
+	for(int i = 0; i < cyc; i++);
+}
+
 uint32_t strlen(const char *str)
 {
         uint32_t count = 0;

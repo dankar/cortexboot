@@ -21,6 +21,8 @@ uint8_t is_numeric(uint8_t ascii);
 
 void sleep();
 
+void delay(uint32_t cyc);
+
 inline uint16_t bs16(uint16_t w)
 {
 	return (w >> 8) | ((w & 0xff) << 8);

@@ -37,13 +37,6 @@
 #ifndef __SPI_H__
 #define __SPI_H__
 
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-
-
-
-
 //*****************************************************************************
 //
 // If building with a C++ compiler, make all of the definitions in this header
@@ -59,18 +52,6 @@ typedef void (*gcSpiHandleTx)(void);
 
 extern unsigned char wlan_tx_buffer[];
 
-#define MOSI_MISO_PORT_SEL    P1SEL1
-#define MOSI_MISO_PORT_SEL2   P1SEL0
-#define SPI_MISO_PIN         BIT6
-#define SPI_MOSI_PIN         BIT7
-
-#define SPI_CLK_PORT_SEL    P2SEL1
-#define SPI_CLK_PORT_SEL2   P2SEL0
-#define SPI_CLK_PIN         BIT2
-
-#define SPI_IRQ_PORT    P2IE
-#define SPI_IFG_PORT    P2IFG
-#define SPI_IRQ_PIN     BIT3
 //*****************************************************************************
 //
 // Prototypes for the APIs.

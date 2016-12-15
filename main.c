@@ -59,12 +59,6 @@ static void system_init(void)
 	wifi_init();
 }
 
-void delay()
-{
-	uint32_t count, count_max = 10000;
-	for(count = 0; count < count_max; count++);
-}
-
 #define LEFT_CONTROL	0
 #define LEFT_SHIFT 	1
 #define LEFT_ALT	2
