@@ -49,14 +49,13 @@ static void system_init(void)
 
         uart_init(core_f, 115200);
 
-	uart_println("UART0 initialized");
-	uart_print("CPU set to ");
-	uart_print_int(core_f);
-	uart_println(" Hz");
+	printf("UART0 initialized\n");
+	printf("CPU set to %d Hz\n", core_f);
 
 	//usb_init();
 	ssp_init_spi(16000000);
 	wifi_init();
+	wifi_connect();
 }
 
 #define LEFT_CONTROL	0
@@ -154,8 +153,11 @@ void update_keys()
 	pin_set(0,0);
 }
 
+uint8_t test_buffer[1024];
+
 int main()
 {
+	memset(test_buffer, 0, 1024);
 	system_init();
 	char c;
 	pin_set(0, 0);
@@ -164,18 +166,30 @@ int main()
 
 	for(;;)
 	{
+		if(!wifi_recv(test_buffer, 1024))
+		{
+			for(;;);
+		}
+		if(!wifi_send(test_buffer, 1024))
+		{
+			for(;;);
+		}
 //		usb_poll();
-		counter++;
+		/*counter++;
 		if(counter % 1000000 == 0)
-			uart_println("tick");
+			printf("tick\n");
 
 		if(uart_char_is_available())
 		{
 			char c = uart_read_char();
+			if(!wifi_send(&c, 1))
+			{
+				for(;;);
+			}
 			push_key(c);
 		}
 
-		update_keys();
+		update_keys();*/
 	}
 
 	return 0;

@@ -33,6 +33,8 @@ uint8_t uart_char_is_available()
 
 void uart_print_char(char c)
 {
+	if(c == '\n')
+		uart_print_char('\r');
 	while(!check_bit8(&uart->LSR, THRE));
 	uart->THR = c;
 }

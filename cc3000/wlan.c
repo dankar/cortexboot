@@ -48,7 +48,7 @@
 #include "evnt_handler.h"
 #include <common.h>
 #include "errno.h"
-
+#include <uart.h>
 
 volatile sSimplLinkInformation tSLInformation;
 
@@ -219,7 +219,6 @@ void wlan_init(		tWlanCB	 	sWlanCB,
 //*****************************************************************************
 void SpiReceiveHandler(void *pvBuffer)
 {	
-	uart_println("Received data, setting tSLInformation");
 	tSLInformation.usEventOrDataReceived = 1;
 	tSLInformation.pucReceivedData = (UINT8 *)pvBuffer;
 

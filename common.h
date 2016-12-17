@@ -18,6 +18,8 @@ uint8_t is_upper(uint8_t ascii);
 uint8_t to_lower(uint8_t ascii);
 uint8_t is_alpha(uint8_t ascii);
 uint8_t is_numeric(uint8_t ascii);
+int printf(const char *format, ...);
+int sprintf(char *out, const char *format, ...);
 
 void sleep();
 

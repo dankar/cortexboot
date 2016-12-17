@@ -35,7 +35,7 @@ void ssp_init_spi()
 
 	// CPOL = 0, CPHA = 1,
 
-	LPC_SSP0->CR0 = TRANSFER8 | BV(CPHA) | (5 << CLOCK_SHIFT);
+	LPC_SSP0->CR0 = TRANSFER8 | BV(CPHA) | (2 << CLOCK_SHIFT);
 
 	LPC_SSP0->CPSR = 2; // Close enough for now...
 
@@ -46,7 +46,7 @@ void ssp_init_spi()
 	{
 		uint16_t t = LPC_SSP0->DR;
 	}
-	uart_println("SSP0 initialized for SPI");
+	printf("SSP0 initialized for SPI\n");
 	//spi_send_data("aaaaaaaaaaaaaaaaaaaaaa", 15);
 	//for(;;);
 }
@@ -58,18 +58,12 @@ uint8_t spi_send(uint8_t data)
 	LPC_SSP0->DR = data;
 	while(!(LPC_SSP0->SR & BV(RNE)));
  	response = (uint8_t)(LPC_SSP0->DR & 0xff);
-	uart_print("Got response: ");
-	uart_print_hex32(response);
-	uart_println("");
 	return response;
 }
 
 void spi_send_data(uint8_t *data, uint32_t len)
 {
 	uint8_t r;
-	uart_print("Sending data: ");
-        uart_print_hex_str(data, len);
-        uart_println(" (not saving response)");
 	for(int i = 0; i < len; i++)
 	{
 		while(!(LPC_SSP0->SR & BV(TNF)));
@@ -81,9 +75,6 @@ void spi_send_data(uint8_t *data, uint32_t len)
 
 void spi_send_receive(uint8_t *data, uint32_t len)
 {
-	uart_print("Sending data: ");
-	uart_print_hex_str(data, len);
-	uart_println("");
 	for(int i = 0; i < len; i++)
 	{
 		while(!(LPC_SSP0->SR & BV(TNF)));
@@ -91,7 +82,4 @@ void spi_send_receive(uint8_t *data, uint32_t len)
 		while(!(LPC_SSP0->SR & BV(RNE)));
  		data[i] = LPC_SSP0->DR;
 	}
-	uart_print("Response: ");
-	uart_print_hex_str(data, len);
-	uart_println("");
 }

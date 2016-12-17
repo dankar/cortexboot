@@ -7,6 +7,7 @@
 
 #include "cc3000/wlan.h"
 #include "cc3000/hci.h"
+#include "cc3000/socket.h"
 
 #define EXTMODE0	0
 #define EXTMODE1	1
@@ -15,16 +16,16 @@
 
 #define ISE_EINT3	21
 
+int sockfd = 0;
+
 void wifi_select(uint8_t select)
 {
 	if(select)
 	{
-		uart_println("Selecting slave");
 		pin_clear(0, 16);
 	}
 	else
 	{
-		uart_println("Deselecting slave");
 		pin_set(0, 16);
 	}
 }
@@ -33,12 +34,10 @@ void wifi_vben(uint8_t vben)
 {
 	if(vben)
 	{
-		uart_println("Setting vben...");
 		pin_set(1, 10);
 	}
 	else
 	{
-		uart_println("Desetting vben...");
 		pin_clear(1, 10);
 	}
 }
@@ -46,9 +45,6 @@ void wifi_vben(uint8_t vben)
 long wifi_irq_status()
 {
 	uint8_t p = pin_read(2, 13);
-	uart_print("Reading IRQ status: ");
-	uart_print_int(p);
-	uart_println(".");
 	return p;
 }
 
@@ -81,10 +77,9 @@ void wifi_interrupt()
 {
 	if(!(LPC_SC->EXTINT & BV(EXTMODE3)))
 	{
-		uart_println("NOT OUR INTERRUPT!!!");
+		printf("NOT OUR INTERRUPT!!!\n");
 	}
 	LPC_SC->EXTINT = BV(EXTMODE3); // Ack interrupt
-	uart_println("Got wifi IRQ");
 	if(!wifi_irq_enabled)
 	{
 		return;
@@ -95,13 +90,15 @@ void wifi_interrupt()
 
 void wifi_enable_irq()
 {
-	uart_println("Enabling interrupts");
 	NVIC->ISER[0] = BV(ISE_EINT3); // enable the interrupt
+	if(!wifi_irq_status())
+	{
+		wifi_interrupt();
+	}
 }
 
 void wifi_disable_irq()
 {
-	uart_println("Disabling interrupts");
 	NVIC->ICER[0] = BV(ISE_EINT3); // disable interrupt
 }
 
@@ -115,24 +112,23 @@ volatile unsigned long ulSmartConfigFinished, ulCC3000Connected,ulCC3000DHCP,
 OkToDoShutDown, ulCC3000DHCP_configured;
 volatile unsigned char ucStopSmartConfig;
 volatile long ulSocket;
+volatile uint8_t host_connected = 0;
 
 #define HCI_EVENT_MASK                                 (HCI_EVNT_WLAN_KEEPALIVE | HCI_EVNT_WLAN_UNSOL_INIT | HCI_EVNT_WLAN_ASYNC_PING_REPORT)
 #define NETAPP_IPCONFIG_MAC_OFFSET                     (20)
 
 void CC3000_UsynchCallback(long lEventType, char * data, unsigned char length)
 {
-	uart_println("Callback...");
 	if (lEventType == HCI_EVNT_WLAN_ASYNC_SIMPLE_CONFIG_DONE)
 	{
         	ulSmartConfigFinished = 1;
         	ucStopSmartConfig     = 1;
-		uart_println("Simple config done");
     	}
 
     	if (lEventType == HCI_EVNT_WLAN_UNSOL_CONNECT)
     	{
     		ulCC3000Connected = 1;
-		uart_println("Connected");
+		printf("Associated (callback)\n");
     	}
 
    	if (lEventType == HCI_EVNT_WLAN_UNSOL_DISCONNECT)
@@ -140,40 +136,43 @@ void CC3000_UsynchCallback(long lEventType, char * data, unsigned char length)
         	ulCC3000Connected = 0;
         	ulCC3000DHCP      = 0;
         	ulCC3000DHCP_configured = 0;
-		uart_println("Disconnected");
     	}
 
    	if(lEventType == HCI_EVNT_WLAN_UNSOL_DHCP)
     	{
-        //
-        // Notes: 
-        // 1) IP config parameters are received swapped
-        // 2) IP config parameters are valid only if status is OK, 
-        // i.e. ulCC3000DHCP becomes 1
-        //
+	        //
+	        // Notes: 
+	        // 1) IP config parameters are received swapped
+	        // 2) IP config parameters are valid only if status is OK, 
+	        // i.e. ulCC3000DHCP becomes 1
+	        //
 
-        //
-        // Only if status is OK, the flag is set to 1 and the 
-        // addresses are valid.
-        //
+	        //
+	        // Only if status is OK, the flag is set to 1 and the 
+	        // addresses are valid.
+	        //
         	if ( *(data + NETAPP_IPCONFIG_MAC_OFFSET) == 0)
         	{
-            		//sprintf((char*)pucCC3000_Rx_Buffer,"IP:%d.%d.%d.%d\f\r", data[3],data[2], data[1], data[0]);
+            		printf("IP:%d.%d.%d.%d\n", data[3],data[2], data[1], data[0]);
 			ulCC3000DHCP = 1;
-			uart_println("DHCP done");
+			printf("DHCP done\n");
         	}
         	else
         	{
 			ulCC3000DHCP = 0;
-			uart_println("Lost dhcp");
+			printf("Lost dhcp\n");
 		}
 	}
 
 	if (lEventType == HCI_EVENT_CC3000_CAN_SHUT_DOWN)
 	{
 		OkToDoShutDown = 1;
-		uart_println("Can shutdown");
 	}
+}
+
+uint8_t wifi_is_configured()
+{
+	return ulCC3000Connected && ulCC3000DHCP;
 }
 
 void wifi_init()
@@ -181,23 +180,112 @@ void wifi_init()
 	uint8_t irq;
 
 	wifi_pin_setup();
+	host_connected = 0;
 
-	uart_println("init...");
+	printf("init...\n");
 	wlan_init(CC3000_UsynchCallback, send_patch, send_patch, send_patch, wifi_irq_status, wifi_enable_irq, wifi_disable_irq, wifi_vben);
 
-	uart_println("start...");
+	printf("start...\n");
 	wlan_start(0);
 
-	uart_println("Start done!");
-	wifi_disable_irq();
-	for(;;);
+	printf("Start done!\n");
 
-	uart_println("event mask...");
+	printf("event mask...\n");
 	wlan_set_event_mask(HCI_EVENT_MASK);
 
-	uart_println("connect...");
-	wlan_connect(WLAN_SEC_WPA2, "data", 4, NULL, "bajskorv123", 11);
-
-	uart_println("done...");
+	printf("connect...\n");
+	if(wlan_connect(WLAN_SEC_WPA2, "data", 4, NULL, "bajskorv123", 11) != 0)
+	{
+		printf("Could not associate\n");
+		return;
+	}
+	else
+	{
+		while(!wifi_is_configured());
+		printf("Associated with AP\n");
+	}
 }
 
+uint8_t wifi_connect()
+{
+	if(!wifi_is_configured())
+	{
+		printf("Can't connect, wifi not associated\n");
+	}
+	host_connected = 0;
+
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	if(sockfd == -1)
+	{
+		printf("Couldn't get socket\n");
+		return 0;
+	}
+	printf("Got socket: %d\n", sockfd);
+
+	sockaddr_in addr;
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(5000);
+	addr.sin_addr.s_addr = 0xA801A8C0; //C0A801A8;
+	printf("Connecting to 192.168.1.168...\n");
+
+	if(connect(sockfd, (sockaddr*)&addr, sizeof(addr)) != 0)
+	{
+		printf("Failed to connect.\n");
+		return 0;
+	}
+
+	printf("Connected to host\n");
+
+	host_connected = 1;
+	return 1;
+}
+
+uint8_t wifi_send(const uint8_t *data, uint32_t len)
+{
+	uint32_t sent = 0;
+	//if(!wifi_is_configured() || !host_connected)
+	///{
+	///	printf("Not connected, can't send\n");
+	////	return 0;
+	//}
+
+	while(sent < len)
+	{
+		uint32_t result = send(sockfd, data+sent, len-sent, 0);
+		if(result <= 0)
+		{
+			printf("Host lost\n");
+			host_connected = 0;
+			return 0;
+		}
+
+		sent += result;
+	}
+
+	return 1;
+}
+
+uint8_t wifi_recv(uint8_t *data, uint32_t len)
+{
+	uint32_t recvd = 0;
+	//if(!wifi_is_configured() || !host_connected)
+	//{
+	//	printf("Not connected, can't recieve\n");
+	//	return 0;
+	//}
+
+	while(recvd < len)
+	{
+		uint32_t result = recv(sockfd, data+recvd, len-recvd, 0);
+
+		if(result <= 0)
+		{
+			printf("Host lost\n");
+			host_connected = 0;
+			return 0;
+		}
+		recvd += result;
+	}
+
+	return 1;
+}

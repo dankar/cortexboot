@@ -2,7 +2,7 @@
 #include "inc/LPC17xx.h"
 #include "hdr/hdr_sc.h"
 #include "pll0.h"
-#include "uart.h"
+#include "common.h"
 
 #define IAP_LOCATION 0x1FFF1FF1
 
@@ -16,7 +16,7 @@ void invoke_isp()
         unsigned int command[5] = {0};
         unsigned int output[5] = {0};
 
-	uart_println("\r\n\r\nInvoking ISP...");
+	printf("\n\nInvoking ISP...\n");
 
 	LPC_SC->PLL0CON = 0;
 	LPC_SC->PLL0CFG = 0;

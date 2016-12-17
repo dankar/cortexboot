@@ -21,9 +21,7 @@ uint8_t usb_endpoint_to_phy(uint8_t endpoint)
 
 void print_control_struct(usb_control_request_t *req)
 {
-	uart_print("	RequestType: ");
-	uart_print_hex32(req->request_type);
-	uart_println("");
+	printf("\tRequestType: %x\n", req->request_type);
 }
 
 
@@ -47,20 +45,20 @@ void usb_get_descriptor()
 	switch(current_control_request.hvalue)
         {
         case DEVICE_DESCRIPTOR:
-		uart_println("Got request for device descriptor");
+		printf("Got request for device descriptor\n");
                 bytes_to_send = MIN(device_descriptor.length, current_control_request.len);
                 usb_control_send((uint8_t*)&device_descriptor, bytes_to_send);
                 break;
         case CONFIG_DESCRIPTOR:
-                uart_println("Got request for config descriptor");
+                printf("Got request for config descriptor\n");
                 bytes_to_send = MIN(configuration_descriptor.config.total_length, current_control_request.len);
                 usb_control_send((uint8_t*)&configuration_descriptor, bytes_to_send);
                 break;
         case STRING_DESCRIPTOR:
-                uart_println("Got request for string descriptor");
+                printf("Got request for string descriptor\n");
 		if(current_control_request.lvalue == 0x00)
 		{
-			uart_println("Sending lang list");
+			printf("Sending lang list\n");
 			bytes_to_send = MIN(sizeof(string_descriptor), current_control_request.len);
 			usb_control_send((uint8_t*)&string_descriptor, bytes_to_send);
 		}
@@ -70,15 +68,15 @@ void usb_get_descriptor()
 		}
                 break;
 	case HID_REPORT_DESCRIPTOR:
-		uart_println("Got request for report descriptor");
+		printf("Got request for report descriptor\n");
 		bytes_to_send = MIN(sizeof(hid_report_descriptor), current_control_request.len);
 		usb_control_send((uint8_t*)&hid_report_descriptor, bytes_to_send);
 		break;
         default:
                 // Unknown descriptor request, stall
-		uart_println("!!!!!!!!!!!!!!!!!!!! Got request for unknown descriptor");
+		printf("!!!!!!!!!!!!!!!!!!!! Got request for unknown descriptor\n");
         	print_control_struct(&current_control_request);
-                uart_println("Stalling endpoint");
+                printf("Stalling endpoint\n");
 	        usb_stall_endpoint(0x01);
                 break;
         }
@@ -86,7 +84,7 @@ void usb_get_descriptor()
 
 void usb_unknown_request()
 {
-	uart_println("!!!!!!!!!!!!!!!!!!!!!!!!! Got unknown request");
+	printf("!!!!!!!!!!!!!!!!!!!!!!!!! Got unknown request\n");
         print_control_struct(&current_control_request);
 }
 
@@ -158,11 +156,11 @@ void usb_control_request(uint8_t *data, uint32_t len, uint8_t *extra_data, uint3
 			usb_write_endpoint(CONTROL_ENDPOINT, 0, 0);
 			break;
 		case SET_CONFIGURATION:
-			uart_println("Got set config");
+			printf("Got set config\n");
 			usb_set_configuration(current_control_request.lvalue);
 			break;
 		case SET_FEATURE:
-			uart_println("Got set feature");
+			printf("Got set feature\n");
 			usb_set_feature();
 			break;
 		default:

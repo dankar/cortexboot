@@ -52,6 +52,7 @@
 #include "netapp.h"
 #include "spi.h"
 #include <wifi.h>
+#include <uart.h>
 
 
 
@@ -235,17 +236,11 @@ UINT8 * hci_event_handler(void *pRetParams, UINT8 *from, UINT8 *fromlen)
 	UINT8 * RecvParams;
 	UINT8 *RetParams;
 
-	uart_println("Waiting for event...");
-
 	while (1)
 	{
 		if (tSLInformation.usEventOrDataReceived != 0)
 		{
-			uart_print("Got event! ");
 			pucReceivedData = (tSLInformation.pucReceivedData);
-
-			uart_print_hex_str(pucReceivedData, 15);
-			uart_println("");
 
 			if (*pucReceivedData == HCI_TYPE_EVNT)
 			{
@@ -493,7 +488,6 @@ UINT8 * hci_event_handler(void *pRetParams, UINT8 *from, UINT8 *fromlen)
 
 }
 
-//*****************************************************************************
 //
 //!  hci_unsol_event_handler
 //!
@@ -504,7 +498,6 @@ UINT8 * hci_event_handler(void *pRetParams, UINT8 *from, UINT8 *fromlen)
 //!
 //!  @brief              Handle unsolicited events
 //
-//*****************************************************************************
 INT32 hci_unsol_event_handler(CHAR *event_hdr)
 {
 	CHAR * data = NULL;
@@ -532,7 +525,7 @@ INT32 hci_unsol_event_handler(CHAR *event_hdr)
 					{
 						tSLInformation.sWlanCB(HCI_EVENT_CC3000_CAN_SHUT_DOWN, NULL, 0);
 					}
-				}				
+				}
 				return 1;
 
 			}
@@ -540,7 +533,7 @@ INT32 hci_unsol_event_handler(CHAR *event_hdr)
 	}
 
 	if(event_type & HCI_EVNT_WLAN_UNSOL_BASE)
-	{           
+	{
 		switch(event_type)
 		{
 		case HCI_EVNT_WLAN_KEEPALIVE:
@@ -662,11 +655,11 @@ INT32 hci_unsol_event_handler(CHAR *event_hdr)
 	}
 
 	//handle a case where unsolicited event arrived, but was not handled by any of the cases above
-	if ((event_type != tSLInformation.usRxEventOpcode) && (event_type != HCI_EVNT_PATCHES_REQ))
-	{
-		uart_println("Unsolicited...ignoring");
-		return(1);
-	}
+	//if ((event_type != tSLInformation.usRxEventOpcode) && (event_type != HCI_EVNT_PATCHES_REQ))
+	//{
+	//	uart_println("Unsolicited...ignoring");
+	//	return(1);
+	//}
 
 	return(0);
 }

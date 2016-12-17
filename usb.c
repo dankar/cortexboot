@@ -116,17 +116,13 @@ void usb_realize_endpoint(uint32_t endpoint, uint32_t max_packet_size)
 	LPC_USB->USBEpInd = endpoint;
 	LPC_USB->USBMaxPSize = MAX_PACKET_SIZE0;
 
-	uart_print("Waiting for realization of endpoint ");
-	uart_print_int(endpoint);
-	uart_println("...");
+	printf("Waiting for realization of endpoint %d...\n", endpoint);
 
 	while(!(LPC_USB->USBDevIntSt & BV(EP_RLZED)));
 
 	LPC_USB->USBDevIntClr |= BV(EP_RLZED);
 
-	uart_print("Current endpoints: ");
-	uart_print_hex32(LPC_USB->USBReEp);
-	uart_println("");
+	printf("Current endpoints: %x\n", LPC_USB->USBReEp);
 }
 
 void usb_enable_endpoint_interrupt(uint32_t endpoint)
@@ -145,10 +141,10 @@ uint32_t usb_init()
 
 	LPC_USB->USBClkCtrl |= BV(DEV_CLK_EN) | BV(AHB_CLK_EN); // Enable clocks
 
-	uart_print("USB clock status: ");
+	printf("USB clock status: ");
 	while(!((LPC_USB->USBClkSt & (BV(DEV_CLK_EN)|BV(AHB_CLK_EN))) == (BV(DEV_CLK_EN)|BV(AHB_CLK_EN)))); // Wait for clock status OK
 
-	uart_println("ok");
+	printf("ok\n");
 
 	// set_pin_debug(1);
 
@@ -165,14 +161,12 @@ uint32_t usb_init()
 
 	LPC_USB->USBDevIntClr |= BV(EP_RLZED);
 
-	uart_print("Current value of realized endpoints: ");
-	uart_print_int(LPC_USB->USBReEp);
-	uart_println("");
+	printf("Current value of realized endpoints: %x\n", LPC_USB->USBReEp);
 
 	usb_realize_endpoint(0x00, MAX_PACKET_SIZE0);
 	usb_realize_endpoint(0x01, MAX_PACKET_SIZE0);
 
-	uart_println("Control endpoints are now realized");
+	printf("Control endpoints are now realized\n");
 
 	LPC_USB->USBEpIntClr = 0xffffffff; // Clear all interrupts
 	LPC_USB->USBDevIntClr = 0xffffffff;
@@ -180,11 +174,11 @@ uint32_t usb_init()
 	usb_enable_endpoint_interrupt(0);
 	usb_enable_endpoint_interrupt(1);
 
-	uart_println("Enabled interrupts");
+	printf("Enabled interrupts\n");
 
 	usb_sie_command(CMD_SET_MODE, BV(AP_CLK) /*| BV(INAK_CI) | BV(INAK_CO)*/);
 
-	uart_println("Set AP_CLK to 1");
+	printf("Set AP_CLK to 1\n");
 
 	usb_sie_command(CMD_SET_ADDRESS, 0x00 |BV(DEV_EN));
 
@@ -325,7 +319,7 @@ void usb_endpoint0(uint32_t stage)
 			}
 			else
 			{
-				uart_println("ERROR! GOT EXTRA DATA");
+				printf("ERROR! GOT EXTRA DATA\n");
 			}
 		}
 	}
@@ -378,14 +372,14 @@ void usb_poll()
 		}
 		if(epint & BV(EP1RX))
 		{
-			uart_println("EP4RX!");
+			printf("EP4RX!\n");
 			sleep();
 		}
 		LPC_USB->USBDevIntClr = BV(EP_SLOW);
 	}
 	else if (devintst & BV(DEV_STAT))
 	{
-		uart_println("GOT USB RESET");
+		printf("GOT USB RESET\n");
 		LPC_USB->USBDevIntClr = BV(DEV_STAT);
 	}
 	else if (devintst & BV(FRAME))
@@ -397,9 +391,7 @@ void usb_poll()
 	}
 	else
 	{
-		uart_print("Got unknown interupt: ");
-		uart_print_hex32(devintst);
-		uart_println("");
+		printf("Got unknown interrupt: %x\n", devintst);
 		LPC_USB->USBDevIntClr = devintst;
 		for(int i = 0; i < 100000000; i++);
 	}
