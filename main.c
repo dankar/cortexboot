@@ -5,7 +5,7 @@
 #include "pll0.h"
 #include "iap.h"
 #include "usb.h"
-#include "usb_impl.h"
+#include "usb_device.h"
 #include "ssp.h"
 #include "common.h"
 #include "wifi.h"
@@ -52,8 +52,8 @@ static void system_init(void)
 	printf("UART0 initialized\n");
 	printf("CPU set to %d Hz\n", core_f);
 
-	//usb_init();
 	ssp_init_spi(16000000);
+	usb_init();
 	wifi_init();
 	wifi_connect();
 }
@@ -166,15 +166,6 @@ int main()
 
 	for(;;)
 	{
-		if(!wifi_recv(test_buffer, 1024))
-		{
-			for(;;);
-		}
-		if(!wifi_send(test_buffer, 1024))
-		{
-			for(;;);
-		}
-//		usb_poll();
 		/*counter++;
 		if(counter % 1000000 == 0)
 			printf("tick\n");

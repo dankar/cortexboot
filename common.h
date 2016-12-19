@@ -10,6 +10,10 @@
 #define MAX(x, y) ((x > y) ? x : y)
 #define MIN(x, y) ((x > y) ? y : x)
 
+#define SWAP32(x) (((x>>24)&0xff) | ((x<<8)&0xff0000) | ((x>>8)&0xff00) | ((x<<24)&0xff000000))
+
+#define SWAP16(x) ((x << 8) | (x >> 8 ))
+
 uint32_t strlen(const char *str);
 uint32_t wstrlen(const wchar_t *str);
 void *memcpy(void *dst, const void* src, size_t num);

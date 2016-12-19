@@ -1,7 +1,7 @@
 TOOLCHAIN=arm-none-eabi-
 LINKSCRIPT=link.ld
 LDFLAGS=-T $(LINKSCRIPT)
-CFLAGS=-c -mcpu=cortex-m3 -mthumb -g -I. -Icc3000/ -fshort-wchar -fno-builtin-printf
+CFLAGS=-c -mcpu=cortex-m3 -mthumb -g -I. -Icc3000/ -fshort-wchar -fno-builtin-printf -Wall
 ASFLAGS=-c -mcpu=cortex-m3 -mthumb -g -I.
 CC=$(TOOLCHAIN)gcc
 LD=$(TOOLCHAIN)ld
@@ -15,7 +15,7 @@ OBJECTS=$(SOURCES:.c=.o)
 BINARY=out.bin
 HEX=out.hex
 
-SERIAL=/dev/ttyUSB1
+SERIAL=/dev/ttyUSB0
 BAUD=115200
 PROGRAMBAUD=115200
 

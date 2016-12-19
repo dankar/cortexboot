@@ -212,6 +212,10 @@ uint8_t wifi_connect()
 	{
 		printf("Can't connect, wifi not associated\n");
 	}
+	if(host_connected)
+	{
+		return 1;
+	}
 	host_connected = 0;
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -243,11 +247,10 @@ uint8_t wifi_connect()
 uint8_t wifi_send(const uint8_t *data, uint32_t len)
 {
 	uint32_t sent = 0;
-	//if(!wifi_is_configured() || !host_connected)
-	///{
-	///	printf("Not connected, can't send\n");
-	////	return 0;
-	//}
+	while(!wifi_is_configured() || !host_connected)
+	{
+		return 0;
+	}
 
 	while(sent < len)
 	{
@@ -268,11 +271,10 @@ uint8_t wifi_send(const uint8_t *data, uint32_t len)
 uint8_t wifi_recv(uint8_t *data, uint32_t len)
 {
 	uint32_t recvd = 0;
-	//if(!wifi_is_configured() || !host_connected)
-	//{
-	//	printf("Not connected, can't recieve\n");
-	//	return 0;
-	//}
+	if(!wifi_is_configured() || !host_connected)
+	{
+		return 0;
+	}
 
 	while(recvd < len)
 	{

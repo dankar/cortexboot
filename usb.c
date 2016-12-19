@@ -2,8 +2,13 @@
 #include "gpio.h"
 #include "common.h"
 #include "uart.h"
-#include "usb_impl.h"
+#include "usb_proto.h"
+#include "usb_device.h"
+#include "usb_msd.h"
 #include "usb.h"
+
+// ISER0 bits
+#define ISE_USB		24
 
 // USBRxPLen register bits
 #define DV		10
@@ -55,6 +60,8 @@
 #define EP0TX		1
 #define EP1RX		2
 #define EP1TX		3
+#define EP2RX		4
+#define EP2TX		5
 #define EP4RX		8
 #define EP4TX		9
 
@@ -72,13 +79,26 @@
 // Endpoint status bits
 #define EP_STATUS_ST	0
 
-uint8_t *data_to_send = 0;
-uint8_t num_to_send = 0;
-uint8_t num_sent = 0;
+uint8_t *control_data_to_send = 0;
+uint8_t control_num_to_send = 0;
+uint8_t control_num_sent = 0;
 
-uint8_t *data_to_receive = 0;
-uint8_t num_to_receive = 0;
-uint8_t num_received = 0;
+uint8_t *control_data_to_receive = 0;
+uint8_t control_num_to_receive = 0;
+uint8_t control_num_received = 0;
+
+uint8_t *bulk_data_to_send = 0;
+uint32_t bulk_num_to_send = 0;
+uint32_t bulk_num_sent = 0;
+
+uint8_t *bulk_data_to_receive = 0;
+uint32_t bulk_num_to_receive = 0;
+uint32_t bulk_num_received = 0;
+
+uint8_t usb_endpoint_to_phy(uint8_t endpoint)
+{
+        return ((endpoint & ~0x80) << 1) + ((endpoint & 0x80) ? 1 : 0);
+}
 
 void usb_sie_command(uint8_t command, uint8_t data)
 {
@@ -114,7 +134,7 @@ void usb_realize_endpoint(uint32_t endpoint, uint32_t max_packet_size)
 {
 	LPC_USB->USBReEp |= 1 << endpoint;
 	LPC_USB->USBEpInd = endpoint;
-	LPC_USB->USBMaxPSize = MAX_PACKET_SIZE0;
+	LPC_USB->USBMaxPSize = max_packet_size;
 
 	printf("Waiting for realization of endpoint %d...\n", endpoint);
 
@@ -159,23 +179,30 @@ uint32_t usb_init()
 	//set_pin_mode(0, 29, NEITHER);
 	//set_pin_mode(0, 30, NEITHER);
 
+	LPC_USB->USBDevIntEn = BV(EP_SLOW) | BV(DEV_STAT) | BV(EP_FAST) | BV(ERR_INT);
+
 	LPC_USB->USBDevIntClr |= BV(EP_RLZED);
 
+#ifdef VERBOSE_DEBUG
 	printf("Current value of realized endpoints: %x\n", LPC_USB->USBReEp);
+#endif
+	//usb_realize_endpoint(usb_endpoint_to_phy(CONTROL_OUT_ENDPOINT), MAX_PACKET_SIZE0);
+	//usb_realize_endpoint(usb_endpoint_to_phy(CONTROL_IN_ENDPOINT), MAX_PACKET_SIZE0);
 
-	usb_realize_endpoint(0x00, MAX_PACKET_SIZE0);
-	usb_realize_endpoint(0x01, MAX_PACKET_SIZE0);
+	usb_configure_endpoint(CONTROL_OUT_ENDPOINT, MAX_PACKET_SIZE0);
+	usb_configure_endpoint(CONTROL_IN_ENDPOINT, MAX_PACKET_SIZE0);
 
+#ifdef VERBOSE_DEBUG
 	printf("Control endpoints are now realized\n");
-
+#endif
 	LPC_USB->USBEpIntClr = 0xffffffff; // Clear all interrupts
 	LPC_USB->USBDevIntClr = 0xffffffff;
 
-	usb_enable_endpoint_interrupt(0);
-	usb_enable_endpoint_interrupt(1);
-
+	//usb_enable_endpoint_interrupt(usb_endpoint_to_phy(CONTROL_OUT_ENDPOINT));
+	//usb_enable_endpoint_interrupt(usb_endpoint_to_phy(CONTROL_IN_ENDPOINT));
+#ifdef VERBOSE_DEBUG
 	printf("Enabled interrupts\n");
-
+#endif
 	usb_sie_command(CMD_SET_MODE, BV(AP_CLK) /*| BV(INAK_CI) | BV(INAK_CO)*/);
 
 	printf("Set AP_CLK to 1\n");
@@ -184,6 +211,9 @@ uint32_t usb_init()
 
 	usb_sie_command(CMD_SET_STATUS, BV(CON));
 
+	uint32_t *prioreg = 0xe000e418;
+	*prioreg |= 5 << 3;
+	NVIC->ISER[0] = BV(ISE_USB);
 }
 
 void usb_clear_endpoint_interrupt(uint8_t ep)
@@ -247,27 +277,114 @@ void usb_write_endpoint(uint32_t endpoint, uint8_t *data, uint32_t count)
 	usb_sie_command_ep_nd((endpoint << 1) + 1, CMD_VALIDATE_BUFFER);
 }
 
+void usb_bulk_data_out()
+{
+	uint32_t len = bulk_num_to_receive - bulk_num_received;
+	uint32_t read = 0;
+
+	if(len > 64)
+		len = 64;
+
+	read = usb_read_endpoint(BULK_OUT_ENDPOINT, bulk_data_to_receive + bulk_num_received);
+	bulk_num_received += read;
+
+	if(bulk_num_received == bulk_num_to_receive)
+	{
+		if(!usb_msd_wants_more_data(bulk_data_to_receive, 512))
+		{
+			bulk_data_to_receive = 0;
+			bulk_num_received = 0;
+			bulk_num_to_receive = 0;
+		}
+	}
+}
+
+void usb_bulk_data_in()
+{
+	uint32_t len = bulk_num_to_send - bulk_num_sent;
+
+	if(len > 64)
+		len = 64;
+
+	//printf("Sending %d, %d remaining\n", len, bulk_num_to_send - bulk_num_sent);
+	usb_write_endpoint(BULK_IN_ENDPOINT, bulk_data_to_send + bulk_num_sent, len);
+
+	bulk_num_sent += len;
+
+	if(bulk_num_sent == bulk_num_to_send)
+	{
+		if(!usb_msd_has_more_data())
+		{
+			bulk_data_to_send = 0;
+			bulk_num_sent = 0;
+			bulk_num_to_send = 0;
+		}
+	}
+}
+
 void usb_data_in_stage()
 {
-	uint32_t len = num_to_send - num_sent;
+	uint32_t len = control_num_to_send - control_num_sent;
 
 	if(len > MAX_PACKET_SIZE0)
 		len = MAX_PACKET_SIZE0;
 
-	usb_write_endpoint(0x00, data_to_send + num_sent, len);
+	usb_write_endpoint(CONTROL_IN_ENDPOINT, control_data_to_send + control_num_sent, len);
 
-	num_sent += len;
+	control_num_sent += len;
 
-	if(num_sent == num_to_send)
+	if(control_num_sent == control_num_to_send)
 	{
-		data_to_send = 0;
-		num_sent = 0;
-		num_to_send = 0;
+		control_data_to_send = 0;
+		control_num_sent = 0;
+		control_num_to_send = 0;
 	}
 }
 #define SETUP_STAGE	0
 #define IN_STAGE	1
 #define OUT_STAGE	2
+
+void usb_bulk(uint32_t stage)
+{
+	uint8_t bulk_data[64] = {0};
+	uint32_t num_recv;
+
+	switch(stage)
+	{
+	case IN_STAGE:
+		if(bulk_data_to_send)
+		{
+			usb_bulk_data_in();
+		}
+		else if(msd_has_status)
+		{
+			usb_msd_status();
+			if(bulk_data_to_send)
+			{
+				usb_bulk_data_in();
+			}
+		}
+		break;
+	case OUT_STAGE:
+		// If a write command is active we get the next sector
+		if(usb_msd_write_active())
+		{
+			usb_bulk_data_out();
+		}
+		else
+		{
+			// Get new scsi command
+			bulk_data_to_send = 0; bulk_num_to_send = 0; bulk_num_sent = 0;
+			num_recv = usb_read_endpoint(BULK_OUT_ENDPOINT, bulk_data);
+			usb_msd_out(bulk_data, num_recv);
+			if(bulk_data_to_send)
+			{
+				usb_bulk_data_in();
+			}
+			break;
+		}
+	};
+}
 
 void usb_endpoint0(uint32_t stage)
 {
@@ -277,10 +394,10 @@ void usb_endpoint0(uint32_t stage)
 	switch(stage)
 	{
 	case SETUP_STAGE:
-		data_to_send = 0; num_to_send = 0; num_sent = 0;
+		control_data_to_send = 0; control_num_to_send = 0; control_num_sent = 0;
 		num_recv = usb_read_endpoint(0x00, control_request);
 		usb_control_request(control_request, num_recv, 0, 0);
-		if(data_to_send)
+		if(control_data_to_send)
 		{
 			usb_data_in_stage();
 		}
@@ -309,12 +426,12 @@ void usb_endpoint0(uint32_t stage)
 		}
 		else
 		{
-			if(data_to_receive)
+			if(control_data_to_receive)
 			{
-				num_received += usb_read_endpoint(0x00, data_to_receive + num_received);
-				if(num_received >= num_to_receive)
+				control_num_received += usb_read_endpoint(0x00, control_data_to_receive + control_num_received);
+				if(control_num_received >= control_num_to_receive)
 				{
-					usb_control_request(0, 0, data_to_receive, num_received);
+					usb_control_request(0, 0, control_data_to_receive, control_num_received);
 				}
 			}
 			else
@@ -357,58 +474,100 @@ void usb_poll()
 			{
 				usb_endpoint0(OUT_STAGE);
 			}
+
+			epint &= ~BV(EP0RX);
 		}
 
 		if(epint & BV(EP0TX))
 		{
 			usb_set_clear_and_status(EP0TX);
 			usb_endpoint0(IN_STAGE);
+			epint &= ~BV(EP0TX);
 		}
 
 		if(epint & BV(EP1TX))
 		{
 			usb_set_clear_and_status(EP1TX);
-			usb_interrupt();
+			usb_endpoint_interrupt();
+			epint &= ~BV(EP1TX);
 		}
 		if(epint & BV(EP1RX))
 		{
-			printf("EP4RX!\n");
+			sleep();
+			epint &= ~BV(EP1RX);
+		}
+		if(epint & BV(EP2RX))
+		{
+			usb_set_clear_and_status(EP2RX);
+			usb_bulk(OUT_STAGE);
+			epint &= ~BV(EP2RX);
+		}
+		if(epint & BV(EP2TX))
+		{
+			usb_set_clear_and_status(EP2TX);
+			usb_bulk(IN_STAGE);
+			epint &= ~BV(EP2TX);
+		}
+		if(epint)
+		{
+			printf("Unhandled endpoint interrupt: %x\n", epint);
 			sleep();
 		}
-		LPC_USB->USBDevIntClr = BV(EP_SLOW);
 	}
-	else if (devintst & BV(DEV_STAT))
+	if (devintst & BV(DEV_STAT))
 	{
 		printf("GOT USB RESET\n");
-		LPC_USB->USBDevIntClr = BV(DEV_STAT);
 	}
-	else if (devintst & BV(FRAME))
+	if (devintst & BV(FRAME))
 	{
+
 	}
-	else if (devintst & BV(TXENDPKT))
+	if (devintst & BV(EP_FAST))
+	{
+		printf("Fast?!\n");
+	}
+	if (devintst & BV(TXENDPKT))
 	{
 		// Packet was received by USB controller
 	}
-	else
+	if (devintst & BV(ERR_INT))
 	{
-		printf("Got unknown interrupt: %x\n", devintst);
-		LPC_USB->USBDevIntClr = devintst;
-		for(int i = 0; i < 100000000; i++);
+		printf("ERROR INTERRUPT ******************************\n");
 	}
+	//else
+	//{
+	//	printf("Got unknown interrupt: %x\n", devintst);
+	//	for(int i = 0; i < 100000000; i++);
+	//}
+	LPC_USB->USBDevIntClr = devintst;
+}
+
+void usb_bulk_send(uint8_t *data, uint32_t len)
+{
+	bulk_data_to_send = data;
+	bulk_num_to_send = len;
+	bulk_num_sent = 0;
+}
+
+void usb_bulk_receive(uint8_t *data, uint32_t len)
+{
+	bulk_data_to_receive = data;
+	bulk_num_to_receive = len;
+	bulk_num_received = 0;
 }
 
 void usb_control_send(uint8_t *data, uint32_t len)
 {
-	data_to_send = data;
-	num_to_send = len;
-	num_sent = 0;
+	control_data_to_send = data;
+	control_num_to_send = len;
+	control_num_sent = 0;
 }
 
 void usb_control_receive(uint8_t *data, uint32_t len)
 {
-	data_to_receive = data;
-	num_to_receive = len;
-	num_received = 0;
+	control_data_to_receive = data;
+	control_num_to_receive = len;
+	control_num_received = 0;
 }
 
 void usb_set_address(uint16_t address)
@@ -419,7 +578,7 @@ void usb_set_address(uint16_t address)
 
 void usb_stall_endpoint(uint16_t endpoint)
 {
-	usb_sie_command(0x40 + endpoint, BV(EP_STATUS_ST));
+	usb_sie_command(0x40 + usb_endpoint_to_phy(endpoint), BV(EP_STATUS_ST));
 }
 
 void usb_enable_endpoint(uint16_t endpoint)
@@ -430,4 +589,22 @@ void usb_enable_endpoint(uint16_t endpoint)
 void usb_set_configured()
 {
 	usb_sie_command(CMD_CONFIGURE_DEVICE, 0x01);
+}
+
+void usb_interrupt()
+{
+	usb_poll();
+}
+
+void usb_configure_endpoint(uint8_t endpoint, uint8_t msps)
+{
+        uint8_t phyep = usb_endpoint_to_phy(endpoint);
+#ifdef VERBOSE_DEBUG
+        printf("Enabling physical endpoint %d\n", phyep);
+#endif
+        usb_realize_endpoint(phyep, msps);
+        ///for(int i = 0; i < 1000000; i++);
+        usb_enable_endpoint_interrupt(phyep);
+        usb_enable_endpoint(phyep);
+        usb_enable_endpoint(phyep);
 }

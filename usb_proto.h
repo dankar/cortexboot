@@ -32,8 +32,11 @@
 
 #define LANG_US                 0x0409
 
-#define CONTROL_ENDPOINT 0x00
-#define INTERRUPT_ENDPOINT 0x81
+#define CONTROL_OUT_ENDPOINT 	0x00
+#define CONTROL_IN_ENDPOINT	0x80
+#define INTERRUPT_ENDPOINT 	0x81
+#define BULK_IN_ENDPOINT	0x82
+#define BULK_OUT_ENDPOINT	0x02
 
 #define GET_STATUS              0x00
 #define CLEAR_FEATURE           0x01
@@ -48,6 +51,11 @@
 
 #define PACK __attribute__ ((packed))
 #define BCD(Major, Minor, Revision) (((Major & 0xFF) << 8) | ((Minor & 0x0F) << 4) | (Revision & 0x0F))
+
+
+
+#define MASS_STORAGE_RESET	0xff
+#define GET_MAX_LUN		0xfe
 
 typedef struct
 {

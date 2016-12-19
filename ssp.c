@@ -35,7 +35,7 @@ void ssp_init_spi()
 
 	// CPOL = 0, CPHA = 1,
 
-	LPC_SSP0->CR0 = TRANSFER8 | BV(CPHA) | (2 << CLOCK_SHIFT);
+	LPC_SSP0->CR0 = TRANSFER8 | BV(CPHA) | (3 << CLOCK_SHIFT);
 
 	LPC_SSP0->CPSR = 2; // Close enough for now...
 

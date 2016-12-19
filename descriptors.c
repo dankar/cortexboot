@@ -1,4 +1,4 @@
-#include "usb_impl.h"
+#include "usb_device.h"
 #include "common.h"
 #include <wchar.h>
 #include "descriptors.h"
@@ -33,13 +33,13 @@ usb_descriptors_t configuration_descriptor = {
 			.length = sizeof(usb_configuration_descriptor_t),
 			.descriptor_type = CONFIG_DESCRIPTOR,
 			.total_length = sizeof(usb_descriptors_t), //(config + interface + endpoint)
-			.num_interfaces = 1,
+			.num_interfaces = 2,
 			.configuration_value = 0x5,
 			.iconfiguration = 0x04, // String 4
 			.attributes = 0x80,
 			.max_power = 250
 		},
-		.interface = {
+		.keyboard_interface = {
 			.length = sizeof(usb_interface_descriptor_t),
 			.descriptor_type = INTERFACE_DESCRIPTOR,
 			.interface_number = 0x00,
@@ -66,7 +66,34 @@ usb_descriptors_t configuration_descriptor = {
 				.attributes = ENDPOINT_INTERRUPT,
 				.max_packet_size = 8, // MPS
 				.interval = 10 // interval
-		}
+		},
+		.msd_interface = {
+			.length = sizeof(usb_interface_descriptor_t),
+			.descriptor_type = INTERFACE_DESCRIPTOR,
+			.interface_number = 0x01,
+			.alternate_setting = 0x00,
+			.num_endpoints = 2, // Num endpoints
+			.interface_class = 0x08, // Mass Storage class
+			.interface_sub_class = 0x06, // SCSI Transparent
+			.interface_protocol = 0x50, // Bulk-Only transport
+			.iinterface = 0x04, // String 5
+		},
+		.bulk_in = {
+				.length = sizeof(usb_endpoint_descriptor_t),
+				.descriptor_type = 0x05,
+				.endpoint_address = BULK_IN_ENDPOINT, // address
+				.attributes = ENDPOINT_BULK,
+				.max_packet_size = 64, // MPS
+				.interval = 0 // interval
+		},
+		.bulk_out = {
+				.length = sizeof(usb_endpoint_descriptor_t),
+				.descriptor_type = 0x05,
+				.endpoint_address = BULK_OUT_ENDPOINT, // address
+				.attributes = ENDPOINT_BULK,
+				.max_packet_size = 64, // MPS
+				.interval = 0 // interval
+		},
 };
 
 usb_string_descriptor_t string_descriptor = { 4,
@@ -86,3 +113,4 @@ usb_keyboard_report_descriptor_t hid_report_descriptor = {
 			}
 };
 
+uint8_t max_lun = 0;

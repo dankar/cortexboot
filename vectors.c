@@ -1,4 +1,5 @@
 #include "wifi.h"
+#include "usb.h"
 
 static void __Default_Handler(void) __attribute__ ((interrupt));
 static void __Default_Handler(void)
@@ -10,6 +11,12 @@ static void __gpio_handler(void) __attribute__ ((interrupt));
 static void __gpio_handler(void)
 {
 	wifi_interrupt();
+}
+
+static void __usb_handler(void) __attribute__ ((interrupt));
+static void __usb_handler(void)
+{
+	usb_interrupt();
 }
 
 void NMI_Handler(void) __attribute__ ((interrupt, weak, alias("__Default_Handler")));
@@ -50,7 +57,7 @@ void EINT2_IRQHandler(void) __attribute__ ((interrupt, weak, alias("__Default_Ha
 void EINT3_IRQHandler(void) __attribute__ ((interrupt, weak, alias("__gpio_handler")));
 void ADC_IRQHandler(void) __attribute__ ((interrupt, weak, alias("__Default_Handler")));
 void BOD_IRQHandler(void) __attribute__ ((interrupt, weak, alias("__Default_Handler")));
-void USB_IRQHandler(void) __attribute__ ((interrupt, weak, alias("__Default_Handler")));
+void USB_IRQHandler(void) __attribute__ ((interrupt, weak, alias("__usb_handler")));
 void CAN_IRQHandler(void) __attribute__ ((interrupt, weak, alias("__Default_Handler")));
 void DMA_IRQHandler(void) __attribute__ ((interrupt, weak, alias("__Default_Handler")));
 void I2S_IRQHandler(void) __attribute__ ((interrupt, weak, alias("__Default_Handler")));

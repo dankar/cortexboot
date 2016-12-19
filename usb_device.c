@@ -1,4 +1,4 @@
-#include "usb_impl.h"
+#include "usb_device.h"
 #include "usb.h"
 #include "uart.h"
 #include "common.h"
@@ -14,14 +14,14 @@ uint16_t current_report = 0;
 uint8_t string_buffer[255];
 usb_string_t *usb_string = (usb_string_t*)string_buffer;
 
-uint8_t usb_endpoint_to_phy(uint8_t endpoint)
-{
-	return ((endpoint & ~0x80) << 1) + ((endpoint & 0x80) ? 1 : 0);
-}
-
 void print_control_struct(usb_control_request_t *req)
 {
 	printf("\tRequestType: %x\n", req->request_type);
+	printf("\tRequest: %x\n", req->request);
+	printf("\tlvalue: %x\n", req->lvalue);
+	printf("\thvalue: %x\n", req->hvalue);
+	printf("\tIndex: %x\n", req->index);
+	printf("\tlen: %x\n", req->len);
 }
 
 
@@ -45,20 +45,25 @@ void usb_get_descriptor()
 	switch(current_control_request.hvalue)
         {
         case DEVICE_DESCRIPTOR:
+#ifdef VERBOSE_DEBUG
 		printf("Got request for device descriptor\n");
+#endif
                 bytes_to_send = MIN(device_descriptor.length, current_control_request.len);
                 usb_control_send((uint8_t*)&device_descriptor, bytes_to_send);
                 break;
         case CONFIG_DESCRIPTOR:
+#ifdef VERBOSE_DEBUG
                 printf("Got request for config descriptor\n");
+#endif
                 bytes_to_send = MIN(configuration_descriptor.config.total_length, current_control_request.len);
                 usb_control_send((uint8_t*)&configuration_descriptor, bytes_to_send);
                 break;
         case STRING_DESCRIPTOR:
+#ifdef VERBOSE_DEBUG
                 printf("Got request for string descriptor\n");
+#endif
 		if(current_control_request.lvalue == 0x00)
 		{
-			printf("Sending lang list\n");
 			bytes_to_send = MIN(sizeof(string_descriptor), current_control_request.len);
 			usb_control_send((uint8_t*)&string_descriptor, bytes_to_send);
 		}
@@ -68,16 +73,20 @@ void usb_get_descriptor()
 		}
                 break;
 	case HID_REPORT_DESCRIPTOR:
+#ifdef VERBOSE_DEBUG
 		printf("Got request for report descriptor\n");
+#endif
 		bytes_to_send = MIN(sizeof(hid_report_descriptor), current_control_request.len);
 		usb_control_send((uint8_t*)&hid_report_descriptor, bytes_to_send);
 		break;
         default:
                 // Unknown descriptor request, stall
+#ifdef VERBOSE_DEBUG
 		printf("!!!!!!!!!!!!!!!!!!!! Got request for unknown descriptor\n");
         	print_control_struct(&current_control_request);
                 printf("Stalling endpoint\n");
-	        usb_stall_endpoint(0x01);
+#endif
+	        usb_stall_endpoint(CONTROL_IN_ENDPOINT);
                 break;
         }
 }
@@ -95,15 +104,12 @@ void usb_set_configuration(uint8_t value)
 {
 	if(current_configuration != value)
 	{
-		uint8_t int_ep = usb_endpoint_to_phy(INTERRUPT_ENDPOINT);
+		usb_configure_endpoint(INTERRUPT_ENDPOINT, 8);
+		usb_configure_endpoint(BULK_IN_ENDPOINT, 64);
+		usb_configure_endpoint(BULK_OUT_ENDPOINT, 64);
 		current_configuration = value;
-		usb_realize_endpoint(int_ep, 8);
-		///for(int i = 0; i < 1000000; i++);
-		usb_enable_endpoint_interrupt(int_ep);
-		usb_enable_endpoint(int_ep);
-		usb_enable_endpoint(int_ep);
 	}
-	usb_write_endpoint(CONTROL_ENDPOINT, 0, 0);
+	usb_write_endpoint(CONTROL_IN_ENDPOINT, 0, 0);
 	usb_set_configured();
 
 	usb_write_endpoint(INTERRUPT_ENDPOINT, keyboard_buffer, 8);
@@ -114,7 +120,7 @@ void usb_set_feature()
 	print_control_struct(&current_control_request);
 }
 
-void usb_interrupt()
+void usb_endpoint_interrupt()
 {
 	usb_write_endpoint(INTERRUPT_ENDPOINT, keyboard_buffer, 8);
 }
@@ -153,18 +159,23 @@ void usb_control_request(uint8_t *data, uint32_t len, uint8_t *extra_data, uint3
 		{
 		case SET_ADDRESS:
 			usb_device_address = current_control_request.lvalue;
-			usb_write_endpoint(CONTROL_ENDPOINT, 0, 0);
+			usb_write_endpoint(CONTROL_IN_ENDPOINT, 0, 0);
 			break;
 		case SET_CONFIGURATION:
+#ifdef VERBOSE_DEBUG
 			printf("Got set config\n");
+#endif
 			usb_set_configuration(current_control_request.lvalue);
 			break;
 		case SET_FEATURE:
+#ifdef VERBOSE_DEBUG
 			printf("Got set feature\n");
+#endif
 			usb_set_feature();
 			break;
 		default:
 			usb_unknown_request();
+			usb_stall_endpoint(CONTROL_IN_ENDPOINT);
 		}
 	}
 	else if(current_control_request.request_type == 0x21)
@@ -173,13 +184,13 @@ void usb_control_request(uint8_t *data, uint32_t len, uint8_t *extra_data, uint3
 		{
 		case SET_IDLE:
 			current_idle = current_control_request.lvalue | (current_control_request.hvalue << 8);
-			usb_write_endpoint(CONTROL_ENDPOINT, 0, 0);
+			usb_write_endpoint(CONTROL_IN_ENDPOINT, 0, 0);
 			break;
 		case SET_REPORT:
 			if(extra_data)
 			{
 				current_report = extra_data[0];
-				usb_write_endpoint(CONTROL_ENDPOINT, 0, 0);
+				usb_write_endpoint(CONTROL_IN_ENDPOINT, 0, 0);
 			}
 			else
 			{
@@ -188,7 +199,7 @@ void usb_control_request(uint8_t *data, uint32_t len, uint8_t *extra_data, uint3
 			break;
 		default:
 			usb_unknown_request();
-			usb_stall_endpoint(0x1);
+			usb_stall_endpoint(CONTROL_IN_ENDPOINT);
 		}
 	}
 	else if(current_control_request.request_type == 0x02)
@@ -201,12 +212,24 @@ void usb_control_request(uint8_t *data, uint32_t len, uint8_t *extra_data, uint3
 			break;
 		default:
 			usb_unknown_request();
-			usb_stall_endpoint(0x1);
+			usb_stall_endpoint(CONTROL_IN_ENDPOINT);
+		}
+	}
+	else if(current_control_request.request_type == 0xa1)
+	{
+		switch(current_control_request.request)
+		{
+		case GET_MAX_LUN:
+			usb_write_endpoint(CONTROL_IN_ENDPOINT, &max_lun, 1);
+			break;
+		default:
+			usb_unknown_request();
+			usb_stall_endpoint(CONTROL_IN_ENDPOINT);
 		}
 	}
 	else
 	{
 		usb_unknown_request();
-		usb_stall_endpoint(0x1);
+		usb_stall_endpoint(CONTROL_IN_ENDPOINT);
 	}
 }

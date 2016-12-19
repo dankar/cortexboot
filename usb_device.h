@@ -9,6 +9,6 @@ extern usb_control_request_t current_control_request;
 extern uint8_t keyboard_buffer[8];
 
 void usb_control_request(uint8_t *data, uint32_t len, uint8_t* extra_data, uint32_t extra_len);
-void usb_interrupt();
+void usb_endpoint_interrupt();
 
 #endif
