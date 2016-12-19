@@ -26,7 +26,7 @@ LPC_GPIO_TypeDef *get_port(uint8_t port)
 		return LPC_GPIO3;
 	case 0x4:
 		return LPC_GPIO4;
-	defuault:
+	default:
 		return 0x0;
 	}
 }

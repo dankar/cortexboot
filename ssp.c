@@ -35,7 +35,7 @@ void ssp_init_spi()
 
 	// CPOL = 0, CPHA = 1,
 
-	LPC_SSP0->CR0 = TRANSFER8 | BV(CPHA) | (3 << CLOCK_SHIFT);
+	LPC_SSP0->CR0 = TRANSFER8 | BV(CPHA) | (2 << CLOCK_SHIFT);
 
 	LPC_SSP0->CPSR = 2; // Close enough for now...
 
@@ -45,6 +45,7 @@ void ssp_init_spi()
 	for(int i = 0; i < 1024; i++)
 	{
 		uint16_t t = LPC_SSP0->DR;
+		(void)t;
 	}
 	printf("SSP0 initialized for SPI\n");
 	//spi_send_data("aaaaaaaaaaaaaaaaaaaaaa", 15);
@@ -70,6 +71,7 @@ void spi_send_data(uint8_t *data, uint32_t len)
 		LPC_SSP0->DR = data[i];
 		while(!(LPC_SSP0->SR & BV(RNE)));
  		r = LPC_SSP0->DR;
+		(void)r;
 	}
 }
 

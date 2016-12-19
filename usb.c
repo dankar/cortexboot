@@ -211,9 +211,11 @@ uint32_t usb_init()
 
 	usb_sie_command(CMD_SET_STATUS, BV(CON));
 
-	uint32_t *prioreg = 0xe000e418;
+	uint32_t *prioreg = (uint32_t*)0xe000e418;
 	*prioreg |= 5 << 3;
 	NVIC->ISER[0] = BV(ISE_USB);
+
+	return 1;
 }
 
 void usb_clear_endpoint_interrupt(uint8_t ep)

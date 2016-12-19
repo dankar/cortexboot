@@ -22,7 +22,7 @@ void pll0_feed(void)
 
 uint32_t pll0_start()
 {
-        uint32_t prediv, mul, corediv, fcco, core_frequency;
+        uint32_t prediv, mul, corediv;
 
 	uint32_t crystal = 25000000;
 

@@ -260,12 +260,14 @@ read_operation_t write_operation =
 
 uint8_t usb_msd_has_more_data()
 {
+	uint32_t offset;
 	if(read_operation.blocks_sent == read_operation.blocks)
 	{
 		return 0;
 	}
 	bulk_buffer[0] = READ_10;
-	*(uint32_t*)&bulk_buffer[1] = read_operation.lba + read_operation.blocks_sent;
+	offset = read_operation.lba + read_operation.blocks_sent;
+	memcpy(&bulk_buffer[1], &offset, 4);
 
 	wifi_send(bulk_buffer, 5);
 
@@ -285,6 +287,7 @@ uint8_t usb_msd_write_active()
 
 uint8_t usb_msd_wants_more_data(const uint8_t *data, uint32_t len)
 {
+	uint32_t offset;
 	if(write_operation.blocks_sent == write_operation.blocks)
 	{
 		write_operation.active = 0;
@@ -295,7 +298,8 @@ uint8_t usb_msd_wants_more_data(const uint8_t *data, uint32_t len)
 	if(data)
 	{
 		bulk_buffer[0] = WRITE_10;
-		*(uint32_t*)&bulk_buffer[1] = write_operation.lba + write_operation.blocks_sent;
+		offset = write_operation.lba + write_operation.blocks_sent;
+		memcpy(&bulk_buffer[1], &offset, 4);
 		wifi_send(bulk_buffer, 5);
 		wifi_send(data, len);
 		write_operation.blocks_sent++;

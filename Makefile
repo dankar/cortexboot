@@ -1,7 +1,7 @@
 TOOLCHAIN=arm-none-eabi-
 LINKSCRIPT=link.ld
 LDFLAGS=-T $(LINKSCRIPT)
-CFLAGS=-c -mcpu=cortex-m3 -mthumb -g -I. -Icc3000/ -fshort-wchar -fno-builtin-printf -Wall
+CFLAGS=-c -mcpu=cortex-m3 -mthumb -g -I. -Icc3000/ -fshort-wchar -fno-builtin-printf -Wall -O1
 ASFLAGS=-c -mcpu=cortex-m3 -mthumb -g -I.
 CC=$(TOOLCHAIN)gcc
 LD=$(TOOLCHAIN)ld

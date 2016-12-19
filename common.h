@@ -10,9 +10,9 @@
 #define MAX(x, y) ((x > y) ? x : y)
 #define MIN(x, y) ((x > y) ? y : x)
 
-#define SWAP32(x) (((x>>24)&0xff) | ((x<<8)&0xff0000) | ((x>>8)&0xff00) | ((x<<24)&0xff000000))
+#define SWAP32(x) ((((x)>>24)&0xff) | (((x)<<8)&0xff0000) | (((x)>>8)&0xff00) | (((x)<<24)&0xff000000))
 
-#define SWAP16(x) ((x << 8) | (x >> 8 ))
+#define SWAP16(x) (((x) << 8) | ((x) >> 8 ))
 
 uint32_t strlen(const char *str);
 uint32_t wstrlen(const wchar_t *str);
@@ -51,7 +51,7 @@ inline void clear_bit8(volatile uint8_t *reg, uint8_t bit)
 
 inline uint8_t check_bit16(const volatile uint16_t *reg, uint8_t bit)
 {
-        return (*reg & BV(bit) != 0) ? 1 : 0;
+        return ((*reg & BV(bit)) != 0) ? 1 : 0;
 }
 
 inline void set_bit16(volatile uint16_t *reg, uint8_t bit)
@@ -66,7 +66,7 @@ inline void clear_bit16(volatile uint16_t *reg, uint8_t bit)
 
 inline uint8_t check_bit32(const volatile uint32_t *reg, uint8_t bit)
 {
-        return (*reg & BV(bit) != 0) ? 1 : 0;
+        return ((*reg & BV(bit)) != 0) ? 1 : 0;
 }
 
 inline void set_bit32(volatile uint32_t *reg, uint8_t bit)

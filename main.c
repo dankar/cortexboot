@@ -159,10 +159,8 @@ int main()
 {
 	memset(test_buffer, 0, 1024);
 	system_init();
-	char c;
 	pin_set(0, 0);
 	pin_set(0, 1);
-	uint32_t counter = 0;
 
 	for(;;)
 	{

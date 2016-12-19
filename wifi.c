@@ -177,8 +177,6 @@ uint8_t wifi_is_configured()
 
 void wifi_init()
 {
-	uint8_t irq;
-
 	wifi_pin_setup();
 	host_connected = 0;
 
@@ -194,7 +192,7 @@ void wifi_init()
 	wlan_set_event_mask(HCI_EVENT_MASK);
 
 	printf("connect...\n");
-	if(wlan_connect(WLAN_SEC_WPA2, "data", 4, NULL, "bajskorv123", 11) != 0)
+	if(wlan_connect(WLAN_SEC_WPA2, "data", 4, NULL, (uint8_t*)"bajskorv123", 11) != 0)
 	{
 		printf("Could not associate\n");
 		return;
